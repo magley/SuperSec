@@ -53,7 +53,7 @@ SLF4J nudi nekoliko nivoa logova. Za debagovanje se koriste `DEBUG` i `TRACE`, d
 
 `TRACE` biramo kada nam treba finije logovanje u sklopu jednog "procesa" ili funkcije. Za logovanje korak-po-korak, `TRACE` je bolja opcija. U ostalim slučajevima, koristimo `DEBUG`. 
 
-Kada se desi izuzetak, logger bi trebalo da ispiše _stack trace_. Logback ovo podrazumevano radi. 
+Kada se desi izuzetak, logger bi trebalo da ispiše _stack trace_. Logback ovo podrazumevano radi.
 
 ### 2. Neporecivost
 
@@ -104,25 +104,37 @@ Alternativa MDC-u je strukturirano logovanje, koje je opisano u sekciji "6. Ured
 
 > Stavke log datoteke ne smeju sadržati osetljive podatke;
 
-Prva linija odbrane bi bila da se **ne loguju osetljivi podaci**. Drugim rečima, neophodno je da pazimo šta logujemo.
+Prva linija odbrane bi bila da se **ne loguju osetljivi podaci**. Drugim rečima, treba ručno da pazimo šta logujemo. Šta podrazumeva osetljive podatke zavisi od slučaja korišćenja, prirode podataka, politike korišćenja i zakona države. 
 
 Loggeri automatski pozivaju `.toString()` metodu nad svim objektima prilikom popunjavanja parametrizovanih logova. Ako naivno prosleđujemo objekat, potencijalno može doći do curenja njegovih osetljivih podataka u log.
 
 Gde god je moguće, trebalo bi izbeći plain-text tajne. Šifre se mogu **heširati**, i upotrebom bezbednog algoritma (npr. Argon2 sa dobrim parametrima) nam se skoro garantuje da je nemoguće zloupotrebiti taj podatak ako se pojavi u logovima. Nije moguće heširati sve tajne, npr. osetljivi podaci za kreditnu karticu. U tom slučaju možemo raditi **enkripciju**, ali ovo nas ne štiti u potpunosti.
 
-Umesto logovanja tajne, možemo logovati neki token vezan za tu tajnu, npr. ID korisnika u bazi umesto njegovih ličnih podataka, ili surogatni ključ.
+Umesto logovanja tajne, možemo logovati neki token vezan za tu tajnu, npr. ID korisnika u bazi ili surogatni ključ, umesto ličnih podataka korisnika.
 
 Osetljive podatke ne treba slati u sklopu web API-ja, jer server loguje svaki zahtev i ti podaci se čuvaju kao deo URL-a.
 
-SLF4J nudi podršku za automatsko sakrivanje podataka na osnovu patterna. Na osnovu regex šablona za e-mail, svaka e-mail adresa u logu se može zameniti sa zvezdama (`******`).
+Kredencijali i platni detalji ne smeju da se pojave u logovima. Ovi podaci u nekoj meri prate šablon (ili bismo mogli da ih prisilmo da prate šablon), te bi logger mogao automatski da prepozna takav šablon i maskira odgovarajuće podatke. SLF4J nudi podršku za automatsko sakrivanje podataka na osnovu šablona. Na primer, ako u logu ispišemo tekst oblika: "creditCard=123456" ili ako ispisujemo objekat `{'creditCard': "123456", ...}`, onda bi SLF4j automatski mogao da taj tekst zameni sa zvezdicama (`********`):
+
+```xml
+<!-- https://stackoverflow.com/a/61360391 -->
+<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+    <layout class="com.bpcbt.micro.utils.PatternMaskingLayout">
+        <maskPattern>creditCard=\d+</maskPattern>
+        <!-- ^^^^ Ovde se maskiraju podaci na osnovu šablona-->
+        <pattern>%d{dd/MM/yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%ex</pattern>-->
+    </layout>
+</encoder>
+```
 
 ### 4. Pouzdanost, dostupnost i integritet
 
 > Mehanizam za logovanje mora biti pouzdan, mora obezbediti dostupnost i integritet log datoteka;
 
-Logback nije pouzdan. Da bi postigao visoke performanse u situacijama kada se loguje velik broj događaja, logback će potencijalno ignorisati logovanje događaja čiji je nivo ispod `WARNING`.
+Logback nije **pouzdan**. Da bi postigao visoke performanse u situacijama kada se loguje velik broj događaja, logback će potencijalno ignorisati logovanje događaja čiji je nivo ispod `WARNING`.
 
-Postoji nekoliko napada koji narušavaju dostupnost logova:
+Postoji nekoliko napada koji narušavaju **dostupnost** logova:
 
 1. Nadapač šalje velik broj zahteva što prouzrokuje velikom broju logova. Disk se popunjava logovima što sprečava kako naknadno logovanje, tako i rast drugih vrsta podataka na disku (resursi, baza podataka).
 
@@ -131,14 +143,17 @@ Postoji nekoliko napada koji narušavaju dostupnost logova:
 Napad na prostor se rešava centralizacijom: rutiranje svih logova ka jednom čvoru u serveru. Za ovo možemo koristiti syslog daemone poput *rsyslog* ili on-premise rešenja kao *Logstash*. Moguće je izgubiti log datoteke u tranzitu (pogotovo ako se logovi ne čuvaju van centralizovanog servisa barem privremeno). Stoga je poželjno uvesti replikaciju, ali to dovodi do narušavanja konzistentnosti.
 Logback je optimizovan za high load scenarije ali to dolazi po cenu pouzdanosti.
 
-Integritet možemo obezbediti potpisivanjem logova: svaki log zapis bi se potpisao koristeći potpis prethodnog.
-Ovakav blockchain-oliki pristup nije praktičan po pitanju potrošnji resursa, jer se logovi po prirodi često
-appenduju na prethodne.
+**Integritet** obezbeđujemo na nekoliko načina.
+Potpisivanjem logova (ili dela logova) bismo učinili naš log fajl _tamper proof_ spolja. Ekstremni slučaj ovoga bi bio _blockchain_-oliki pristup heširanja elemenata na osnovu prethodnih, ali u praksi ovakav pristup je nedovoljno efikasan te se ne primenjuje.
 
-Drugi pristup zaštite integriteta bi bio da se logovi repliciraju na više različitih
-tačaka (neparan broj). U da je potencijalno došlo do neželjene izmene logova, radi se "glasanje" gde većina
-određuje _ground truth_. Međutim, ovim samo otežavamo mogućnost maliciozne izmene, a sa druge strane gubimo
-na vremenu potrebnom da se logovi analiziraju. 
+Dodatna zaštita bi podrazumevala enkripciju logova pre pisanja u disk.
+Ključ za dekripciju bi bio dostupan samo određenim korisnicima/ulogama u sistemu.
+
+Ako šaljemo logove u centralizovan sistem, neophodno je to raditi preko bezbednog protokola (HTTPs).
+
+Drugi pristup zaštite integriteta bi bio da se logovi repliciraju na više različitih tačaka (neparan broj). Ako postoji nekonzistentnost među replikama, mogli bismo koristiti algoritam za postizanje koncenzusa na osnovu glasanja.
+
+Čuvanje logova na _write-once-read-many_ uređaj garantuje integritet.
 
 ### 5. Vreme nastanka
 
@@ -162,7 +177,9 @@ Logback nudi podršku za podešavanje formata logova. Jedna od stvari koje se mo
 </configuration>
 ```
 
-Ako logujemo sa više tačak u sistemu, potrebno je uskladiti njihove časovnike. Ovo je dužnost samih računara i najbolje se sprovodi kroz lokalni network time protocol server.
+Ako logujemo sa više tačaka u sistemu, potrebno je uskladiti njihove časovnike. Ovo je dužnost samih računara i najbolje se sprovodi kroz lokalni **network time protocol server**.
+
+Preporučuje se čuvanje vremena nastanka svih logova po istom standardu, npr. UTC.
 
 ### 6. Uredni logovi
 
@@ -237,9 +254,6 @@ Pored rotiranja, zgodno je i organizovati logove u više fajlova.
 Kreiranje direktorijuma po datumima, podela fajlova po nivou ozbiljnosti su neki od
 pristupa koji olakšavaju navigaciju prilikom debagovanja.
 
-### Log rotacija
-
-
 ## Reference
 
 [Debug logging](https://www.crowdstrike.com/cybersecurity-101/observability/debug-logging/)
@@ -279,3 +293,7 @@ pristupa koji olakšavaju navigaciju prilikom debagovanja.
 [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
 
 [Log integrity](https://docs.logsentinel.com/advanced/log-integrity/)
+
+[NIST publication for logging](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-92.pdf)
+
+[OWASP ASVS v4.0.3](https://github.com/OWASP/ASVS/tree/v4.0.3#latest-stable-version---403)
