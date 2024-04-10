@@ -2,7 +2,7 @@
 
 **Naziv izazova u aplikaciji**: **Login Jim**
 
-**Klasa napada**: SQL injekcija
+**Klasa napada**: Injection
 
 **Uticaj**: Napadač može neovlašćeno pristupiti administratorskom, ili bilo kom drugom nalogu.
 
@@ -64,28 +64,49 @@ Isto sam mogao zaključiti iz HTTP odgovora zahteva za registraciju. Sledeći po
 
 ## 4)
 
-**Naziv izazova u aplikaciji**: ****
+**Naziv izazova u aplikaciji**: **API-only XSS**
 
-**Klasa napada**:
+**Klasa napada**: XSS
 
-**Uticaj**:
+**Uticaj**: Moguće je na bekendu skladištiti malicioznu skriptu koja će se izvršiti na svakom računaru kojem se prikaže.
 
-**Ranjivosti**:
+**Ranjivosti**: Nije izvršena sanitacija HTML-a. Nije validiran unos.
 
 **Kontramere**:
 
+https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
+
+1. HTML sanitacija
+2. Validacija unosa
+
 **Beleške**:
+
+_Hint_ stranica nas naslućuje da se fokusiramo na pregled proizvoda. Eskperimentisanjem možemo zaključiti da je dostupan endpoint `/api/Products/${id}`
+koji nam dostavlja podatke o pojedinačnom proizvodu. Na ovaj endpoint je moguće uraditi PUT i u sadržaj HTTP zahteva staviti sledeće:
+
+```json
+{"description":"<iframe src=\"javascript:alert(`xss`)\">"}
+```
+
+Takođe je bitno u zahtevu postaviti  `Content-Type: application/json`
 
 ## 5)
 
-**Naziv izazova u aplikaciji**: ****
+**Naziv izazova u aplikaciji**: **Login Amy**
 
-**Klasa napada**:
+**Klasa napada** Sensitive Data Exposure
 
-**Uticaj**:
+**Uticaj**: Pruža polaznu tačku za druge napade, daje informacije napadaču kojima se može predstaviti kao neko drugi
 
-**Ranjivosti**:
+**Ranjivosti**: Nedostatak dvofaktorske autentifikacije, nedostatak email potvrde korisnika pri pristupu sa nepoznate IP adrese
 
 **Kontramere**:
 
+1. Dvofaktorska autentifikacija
+2. Zahtevati email potvrdu korisnika pri pristupu sa nepoznate IP adrese
+3. Za klijenta: koristiti nasumične lozinke koje se ne mogu povezati sa klijentom OSINT-om (password manager za skladištenje i generisanje lozinki)
+4. Za developere: biti pažljiv
+
 **Beleške**:
+
+Sve informacije za rešavanje izazova se nalaze u njegovom opisu i hintovima. Možemo pretpostaviti da će šifra nekako sadržati reč "kif". Guglovanjem izraza "93.83 billion trillion trillion centuries to brute force" nailazimo na stranicu za proveru jačine lozinki, a iz hinta o "One Important Final Note" zaključujemo da Će šifra verovatno sadržati u sebi tačke. Nakon nekoliko permutacija dolazimo do šifre "K1f....................."
