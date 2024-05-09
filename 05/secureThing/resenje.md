@@ -6,7 +6,7 @@ TODO: Лозинка на `starcraftrules`
 ## а. Покренути пројекат
 
 `web-kangaroo` је фиктивна веб апликација написана за потребе овог задатка.
-API сервер је писан у `Python 3.10` користећи `WebAPI` библиотеку. Серверу се
+API сервер је писан у `Python 3.10` користећи `FastAPI` библиотеку. Серверу се
 приступа преко `nginx`-a. Сервер комуницира са `MariaDB 11.3.2` базом података
 користећи `SqlAlchemy` библиотеку.
 
@@ -215,10 +215,244 @@ remote_syslog_configured=0
 suggestion[]=LOGG-2154|Enable logging to an external logging host for archiving purposes and additional protection|-|-|
 ```
 
-### д.2
+### д.2 Network Review
 
-#### д.2.1
+#### д.2.1 General Information
 
-``
+```bash
+admin@admin-virtualbox:~$ ifconfig -a
+docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
+        ether 02:42:ed:aa:0e:61  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255
+        inet6 fe80::b45f:a1c2:7dd0:12c6  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:2e:cc:d3  txqueuelen 1000  (Ethernet)
+        RX packets 360  bytes 35361 (35.3 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 364  bytes 39803 (39.8 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 83  bytes 8380 (8.3 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 83  bytes 8380 (8.3 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+
+Присутни су `Docker 0`, `Ethernet Network Port 0 Seial 3` и `Loopback`
+
+```bash
+admin@admin-virtualbox:~$ route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.0.2.2        0.0.0.0         UG    100    0        0 enp0s3
+10.0.2.0        0.0.0.0         255.255.255.0   U     100    0        0 enp0s3
+172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
+```
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/resolv.conf
+# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).
+# Do not edit.
+#
+# This file might be symlinked as /etc/resolv.conf. If you're looking at
+# /etc/resolv.conf and seeing this text, you have followed the symlink.
+#
+# This is a dynamic resolv.conf file for connecting local clients to the
+# internal DNS stub resolver of systemd-resolved. This file lists all
+# configured search domains.
+#
+# Run "resolvectl status" to see details about the uplink DNS servers
+# currently in use.
+#
+# Third party programs should typically not access this file directly, but only
+# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a
+# different way, replace this symlink by a static file or a different symlink.
+#
+# See man:systemd-resolved.service(8) for details about the supported modes of
+# operation for /etc/resolv.conf.
+
+nameserver 127.0.0.53
+options edns0 trust-ad
+search .
+```
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/hosts
+# Standard host addresses
+127.0.0.1  localhost
+::1        localhost ip6-localhost ip6-loopback
+ff02::1    ip6-allnodes
+ff02::2    ip6-allrouters
+# This host address
+127.0.1.1  admin-virtualbox
+```
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/nsswitch.conf
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
+
+passwd:         files systemd
+group:          files systemd
+shadow:         files
+gshadow:        files
+
+hosts:          files mdns4_minimal [NOTFOUND=return] dns
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
+```
+
+#### д.2.2 Firewall Rules
+
+Прво, firewall правила:
+
+```bash
+admin@admin-virtualbox:~$ sudo iptables -L -v
+[sudo] password for admin:
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DOCKER-USER  all  --  any    any     anywhere             anywhere
+    0     0 DOCKER-ISOLATION-STAGE-1  all  --  any    any     anywhere             anywhere
+    0     0 ACCEPT     all  --  any    docker0  anywhere             anywhere             ctstate RELATED,ESTABLISHED
+    0     0 DOCKER     all  --  any    docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  docker0 !docker0  anywhere             anywhere
+    0     0 ACCEPT     all  --  docker0 docker0  anywhere             anywhere
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain DOCKER (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  anywhere             anywhere
+    0     0 RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-ISOLATION-STAGE-2 (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DROP       all  --  any    docker0  anywhere             anywhere
+    0     0 RETURN     all  --  any    any     anywhere             anywhere
+
+Chain DOCKER-USER (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 RETURN     all  --  any    any     anywhere             anywhere
+```
+
+Пар ствари се може закључити:
+
+- сва правила су направљена за потребе докер контејнера (који се више не користи на OS-у, те се не разматра овде али напомињемо да је лоша пракса оставити отворен саобраћај овако, поготово ако се не користи)
+- Input ланац нема правила, то значи да свако може да се обрати серверу
+- Forward ланац нема правила (ван докерових), што значи да се саобраћај између процеса на серверу никад не филтрира
+- Output ланац нема правила, тако да сервер може свима да се обрати
+
+За Input би требало направити правило које дозвољава HTTP саобраћај према nginx-овом порту и SSH за одређен списак IP адреса. По потреби би се додавала нова правила.
+
+За Output би требало дозволити пролаз HTTP конекцији кроз nginx-ов порт, DNS, NTP, SSH као и конекције према серверима кроз које се ажурирају пакети (нпр. за pip и apt).
+
+Firewall табелу можемо сачувати помоћу команде:
+
+```bash
+sudo iptables-save | sudo tee /etc/iptables.up.rules
+```
+
+(`sudo iptables-save > /etc/iptables.up.rules` није радио).
+
+```bash
+# vim etc/network/if-pre-up.d/iptables
+#!/bin/bash
+
+/sbin/iptables-restore < /etc/iptables.up.rules
+```
+
+Ажурна верзија IP табеле је сачувана на диск:
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/iptables.up.rules
+# Generated by iptables-save v1.8.7 on Thu May  9 16:32:28 2024
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:DOCKER - [0:0]
+:DOCKER-ISOLATION-STAGE-1 - [0:0]
+:DOCKER-ISOLATION-STAGE-2 - [0:0]
+:DOCKER-USER - [0:0]
+-A FORWARD -j DOCKER-USER
+-A FORWARD -j DOCKER-ISOLATION-STAGE-1
+-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -o docker0 -j DOCKER
+-A FORWARD -i docker0 ! -o docker0 -j ACCEPT
+-A FORWARD -i docker0 -o docker0 -j ACCEPT
+-A DOCKER-ISOLATION-STAGE-1 -i docker0 ! -o docker0 -j DOCKER-ISOLATION-STAGE-2
+-A DOCKER-ISOLATION-STAGE-1 -j RETURN
+-A DOCKER-ISOLATION-STAGE-2 -o docker0 -j DROP
+-A DOCKER-ISOLATION-STAGE-2 -j RETURN
+-A DOCKER-USER -j RETURN
+COMMIT
+# Completed on Thu May  9 16:32:28 2024
+# Generated by iptables-save v1.8.7 on Thu May  9 16:32:28 2024
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:DOCKER - [0:0]
+-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
+-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
+-A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
+-A DOCKER -i docker0 -j RETURN
+COMMIT
+# Completed on Thu May  9 16:32:28 2024
+```
+
+#### д.2.3 IPv6
+
+```bash
+admin@admin-virtualbox:~$ sudo ip6tables -L -v
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+```
+
+Наш сервер не користи IPv6 тако да се он може искључити:
+
+```bash
+# sudo vim /etc/sysctl.conf
+
+# IPV6
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv6.conf.tun0.disable_ipv6 = 1
+```
 
 ## е. Извлачење хеш лозинке
