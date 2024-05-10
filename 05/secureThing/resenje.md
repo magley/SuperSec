@@ -455,4 +455,224 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 net.ipv6.conf.tun0.disable_ipv6 = 1
 ```
 
+### д.3 Filesystem review
+
+#### д.3.1 Mounted partitions
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a device; this may
+# be used with UUID= as a more robust way to name devices that works even if
+# disks are added and removed. See fstab(5).
+#
+# <file system>             <mount point>  <type>  <options>  <dump>  <pass>
+UUID=3c4d532c-4a9a-4d49-9a66-2c280cebda89 /              ext4    defaults   0 1
+/swapfile                                 swap           swap    defaults   0 0
+```
+
+Имамо само главни фајлсистем и swapfile. `defaults` опција подразумева `rw,
+suid, dev, exec, auto, nouser, async`. То значи да `noatime` није коришћен,
+али `exec` и `suid` јесу.
+
+#### д.3.2 Sensitive Files
+
+Видимо да је `shadow` доступан корисницима са root привилегијом:
+
+```bash
+sudo cat /etc/shadow
+root:$y$j9T$LzAM7Bku1KPtjXT45Vgx70$ww3.7lmFS8pfRZUOW9NvJNnK.k1X35j96w7Cr6oD3OA:19850:0:99999:7:::
+daemon:*:19769:0:99999:7:::
+bin:*:19769:0:99999:7:::
+sys:*:19769:0:99999:7:::
+sync:*:19769:0:99999:7:::
+games:*:19769:0:99999:7:::
+man:*:19769:0:99999:7:::
+lp:*:19769:0:99999:7:::
+mail:*:19769:0:99999:7:::
+news:*:19769:0:99999:7:::
+uucp:*:19769:0:99999:7:::
+proxy:*:19769:0:99999:7:::
+www-data:*:19769:0:99999:7:::
+backup:*:19769:0:99999:7:::
+list:*:19769:0:99999:7:::
+irc:*:19769:0:99999:7:::
+gnats:*:19769:0:99999:7:::
+nobody:*:19769:0:99999:7:::
+systemd-network:*:19769:0:99999:7:::
+systemd-resolve:*:19769:0:99999:7:::
+messagebus:*:19769:0:99999:7:::
+systemd-timesync:*:19769:0:99999:7:::
+syslog:*:19769:0:99999:7:::
+_apt:*:19769:0:99999:7:::
+tss:*:19769:0:99999:7:::
+uuidd:*:19769:0:99999:7:::
+tcpdump:*:19769:0:99999:7:::
+usbmux:*:19769:0:99999:7:::
+dnsmasq:*:19769:0:99999:7:::
+kernoops:*:19769:0:99999:7:::
+avahi:*:19769:0:99999:7:::
+cups-pk-helper:*:19769:0:99999:7:::
+rtkit:*:19769:0:99999:7:::
+whoopsie:*:19769:0:99999:7:::
+fwupd-refresh:*:19769:0:99999:7:::
+saned:*:19769:0:99999:7:::
+colord:*:19769:0:99999:7:::
+sddm:*:19769:0:99999:7:::
+geoclue:*:19769:0:99999:7:::
+pulse:*:19769:0:99999:7:::
+hplip:*:19769:0:99999:7:::
+admin:$6$ReFz5oqz6qJw13ly$HcS9/qOfBt88ZANfSd0vw6pG8jYMSGATSknIn8X4X4X/IpqQ0K.cWW3kJtbxSg5g3wtTCRpps4EWoDhbybpCG.:19830:0:99999:7:::
+mysql:!:19850:0:99999:7:::
+sshd:*:19850:0:99999:7:::
+ntp:*:19851:0:99999:7:::
+```
+
+Док је MariaDB фајл доступан свима.
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/mysql/my.cnf
+# The MariaDB configuration file
+#
+# The MariaDB/MySQL tools read configuration files in the following order:
+# 0. "/etc/mysql/my.cnf" symlinks to this file, reason why all the rest is read.
+# 1. "/etc/mysql/mariadb.cnf" (this file) to set global defaults,
+# 2. "/etc/mysql/conf.d/*.cnf" to set global options.
+# 3. "/etc/mysql/mariadb.conf.d/*.cnf" to set MariaDB-only options.
+# 4. "~/.my.cnf" to set user-specific options.
+#
+# If the same option is defined multiple times, the last one will apply.
+#
+# One can use all long options that the program supports.
+# Run program with --help to get a list of available options and with
+# --print-defaults to see which it would actually understand and use.
+#
+# If you are new to MariaDB, check out https://mariadb.com/kb/en/basic-mariadb-articles/
+
+#
+# This group is read both by the client and the server
+# use it for options that affect everything
+#
+[client-server]
+# Port or socket location where to connect
+# port = 3306
+socket = /run/mysqld/mysqld.sock
+
+# Import all .cnf files from configuration directory
+!includedir /etc/mysql/conf.d/
+!includedir /etc/mysql/mariadb.conf.d/
+```
+
+Фајл `shadow.backup` тренутно не постоји:
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/shadow.backup
+cat: /etc/shadow.backup: No such file or directory
+```
+
+#### д.3.3 Setuid
+
+```bash
+admin@admin-virtualbox:~$ sudo find / -perm -4000 -ls
+[sudo] password for admin:
+      297    129 -rwsr-xr-x   1 root     root       131832 Nov 29 15:54 /snap/snapd/20671/usr/lib/snapd/snap-confine
+      882     72 -rwsr-xr-x   1 root     root        72712 Feb  6 13:54 /snap/core22/1380/usr/bin/chfn
+      888     44 -rwsr-xr-x   1 root     root        44808 Feb  6 13:54 /snap/core22/1380/usr/bin/chsh
+      954     71 -rwsr-xr-x   1 root     root        72072 Feb  6 13:54 /snap/core22/1380/usr/bin/gpasswd
+     1038     47 -rwsr-xr-x   1 root     root        47488 Mar 22 13:25 /snap/core22/1380/usr/bin/mount
+     1047     40 -rwsr-xr-x   1 root     root        40496 Feb  6 13:54 /snap/core22/1380/usr/bin/newgrp
+     1062     59 -rwsr-xr-x   1 root     root        59976 Feb  6 13:54 /snap/core22/1380/usr/bin/passwd
+     1180     55 -rwsr-xr-x   1 root     root        55680 Mar 22 13:25 /snap/core22/1380/usr/bin/su
+     1181    227 -rwsr-xr-x   1 root     root       232416 Apr  3  2023 /snap/core22/1380/usr/bin/sudo
+     1241     35 -rwsr-xr-x   1 root     root        35200 Mar 22 13:25 /snap/core22/1380/usr/bin/umount
+     1333     35 -rwsr-xr--   1 root     systemd-resolve    35112 Oct 25  2022 /snap/core22/1380/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+     2602    331 -rwsr-xr-x   1 root     root              338536 Jan  2 17:54 /snap/core22/1380/usr/lib/openssh/ssh-keysign
+     8632     19 -rwsr-xr-x   1 root     root               18736 Feb 26  2022 /snap/core22/1380/usr/libexec/polkit-agent-helper-1
+      879     72 -rwsr-xr-x   1 root     root               72712 Nov 24  2022 /snap/core22/1122/usr/bin/chfn
+      885     44 -rwsr-xr-x   1 root     root               44808 Nov 24  2022 /snap/core22/1122/usr/bin/chsh
+      951     71 -rwsr-xr-x   1 root     root               72072 Nov 24  2022 /snap/core22/1122/usr/bin/gpasswd
+     1035     47 -rwsr-xr-x   1 root     root               47480 Feb 21  2022 /snap/core22/1122/usr/bin/mount
+     1044     40 -rwsr-xr-x   1 root     root               40496 Nov 24  2022 /snap/core22/1122/usr/bin/newgrp
+     1059     59 -rwsr-xr-x   1 root     root               59976 Nov 24  2022 /snap/core22/1122/usr/bin/passwd
+     1177     55 -rwsr-xr-x   1 root     root               55672 Feb 21  2022 /snap/core22/1122/usr/bin/su
+     1178    227 -rwsr-xr-x   1 root     root              232416 Apr  3  2023 /snap/core22/1122/usr/bin/sudo
+     1238     35 -rwsr-xr-x   1 root     root               35192 Feb 21  2022 /snap/core22/1122/usr/bin/umount
+     1330     35 -rwsr-xr--   1 root     systemd-resolve    35112 Oct 25  2022 /snap/core22/1122/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+     2599    331 -rwsr-xr-x   1 root     root              338536 Jan  2 17:54 /snap/core22/1122/usr/lib/openssh/ssh-keysign
+     8618     19 -rwsr-xr-x   1 root     root               18736 Feb 26  2022 /snap/core22/1122/usr/libexec/polkit-agent-helper-1
+  1057822     40 -rwsr-xr-x   1 root     root               37616 Sep 12  2023 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/bin/newgrp
+  1057819     64 -rwsr-xr-x   1 root     root               64152 Sep 12  2023 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/bin/chage
+  1058580     36 -rwsr-xr-x   1 root     root               35952 Jan 23  2023 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/bin/mount
+  1057820     80 -rwsr-xr-x   1 root     root               78120 Sep 12  2023 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/bin/gpasswd
+  1058595     32 -rwsr-xr-x   1 root     root               32032 Jan 23  2023 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/bin/su
+  1058598     28 -rwsr-xr-x   1 root     root               27776 Jan 23  2023 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/bin/umount
+  1059815     60 -rwsr-x---   1 root     81                 57856 Jan 10 22:38 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/libexec/dbus-1/dbus-daemon-launch-helper
+  1057434     12 -rwsr-xr-x   1 root     root               11152 Jan 29 04:54 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/sbin/pam_timestamp_check
+  1057436     36 -rwsr-xr-x   1 root     root               36176 Jan 29 04:54 /var/snap/docker/common/var-lib-docker/overlay2/4rwb62v8446vdom8l7ppr4oa2/diff/usr/sbin/unix_chkpwd
+   263348     40 -rwsr-xr-x   1 root     root               40496 Feb  6 13:54 /usr/bin/newgrp
+   263420     60 -rwsr-xr-x   1 root     root               59976 Feb  6 13:54 /usr/bin/passwd
+   263864    228 -rwsr-xr-x   1 root     root              232416 Apr  3  2023 /usr/bin/sudo
+   262818     44 -rwsr-xr-x   1 root     root               44808 Feb  6 13:54 /usr/bin/chsh
+   262549     48 -rwsr-xr-x   1 root     root               47488 Apr  9 17:32 /usr/bin/mount
+   262812     72 -rwsr-xr-x   1 root     root               72712 Feb  6 13:54 /usr/bin/chfn
+   263022     72 -rwsr-xr-x   1 root     root               72072 Feb  6 13:54 /usr/bin/gpasswd
+   262857     56 -rwsr-xr-x   1 root     root               55680 Apr  9 17:32 /usr/bin/su
+   263523     32 -rwsr-xr-x   1 root     root               30872 Feb 26  2022 /usr/bin/pkexec
+   262988     36 -rwsr-xr-x   1 root     root               35200 Mar 23  2022 /usr/bin/fusermount3
+   262642     36 -rwsr-xr-x   1 root     root               35200 Apr  9 17:32 /usr/bin/umount
+   266228     16 -rwsr-xr-x   1 root     root               14488 Dec  2 04:44 /usr/lib/mysql/plugin/auth_pam_tool_dir/auth_pam_tool
+   262367     16 -rwsr-sr-x   1 root     root               14488 Apr  9 05:18 /usr/lib/xorg/Xorg.wrap
+   270442    332 -rwsr-xr-x   1 root     root              338536 Mar 15 21:28 /usr/lib/openssh/ssh-keysign
+   262629    140 -rwsr-xr-x   1 root     root              142536 Mar  6 22:18 /usr/lib/snapd/snap-confine
+   264691     36 -rwsr-xr--   1 root     messagebus         35112 Oct 25  2022 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
+   271690     20 -rwsr-xr-x   1 root     root               18736 Feb 26  2022 /usr/libexec/polkit-agent-helper-1
+   264595     56 -rwsr-xr-x   1 root     root               54184 Mar 22 15:00 /usr/share/code/chrome-sandbox
+   271912    416 -rwsr-xr--   1 root     dip               424512 Feb 24  2022 /usr/sbin/pppd
+```
+
+Интегритет пакета се може добити на `/var/lib/dpkg/info/[NAME].md5sums`.
+У том фајлу се налазе чексуме за све фајлове одговарајућег пакета. Онда бисмо покренули `md5sum ...` и поредили ручно. Други начин је користити пакет `debsums`:
+
+```bash
+admin@admin-virtualbox:~$ sudo debsums -c -s
+```
+
+Ништа није исписано, те је интегритет свих фајлова очуван.
+
+Што се тиче права приступа, треба минимизовати програме који имају `setuid`.
+Програми који треба да имају `setuid` су `su`, `sudo`, `passwd`, сервери за X.
+`mount` и `umount` исто захтевају setuid, осим ако се не користи нека
+алтернатива попут `udisk`. Сви остали програми не би требало да имају `setuid`
+подешен, већ се покрећу са `sudo`, тако да пермисије нису адекватно подешене.
+
+#### д.3.4 Normal Files
+
+```bash
+admin@admin-virtualbox:~$ find / -type f -perm -006 2>/dev/null | grep -v /proc
+/sys/kernel/security/apparmor/.remove
+/sys/kernel/security/apparmor/.replace
+/sys/kernel/security/apparmor/.load
+/sys/kernel/security/apparmor/.notify
+/sys/kernel/security/apparmor/.access
+```
+
+```bash
+admin@admin-virtualbox:~$ find / -type f -perm -002 2>/dev/null | grep -v /proc
+/sys/kernel/security/apparmor/.remove
+/sys/kernel/security/apparmor/.replace
+/sys/kernel/security/apparmor/.load
+/sys/kernel/security/apparmor/.notify
+/sys/kernel/security/apparmor/.access
+```
+
+Једине датотеке које могу read-write сви корисници су фајлови везани за
+AppArmor.
+
+#### д.3.5 Backup
+
+Lubuntu подразумевано нема `backup` алат нити `/backup` фолдер. У случају да је
+прављење backup-а потребно (јесте), онда се треба инсталирати `backup` и
+подесити пермисије над целим фолдером.
+
 ## е. Извлачење хеш лозинке
