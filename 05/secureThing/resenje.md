@@ -675,4 +675,219 @@ Lubuntu подразумевано нема `backup` алат нити `/backup`
 прављење backup-а потребно (јесте), онда се треба инсталирати `backup` и
 подесити пермисије над целим фолдером.
 
+### д.4 User review
+
+#### д.4.1 Reviewing the passwd file
+
+```bash
+admin@admin-virtualbox:/bin$ cat /etc/passwd | grep admin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+admin:x:1000:1000:admin:/home/admin:/bin/bash
+```
+
+`admin` је назив корисничког налога на овом OS-u. Видимо да је ID 1000 тј. није
+0 (root). Подразумевани shell за овог корисника је `/bin/bash`.
+
+Следи преглед целог `/etc/passwrd` фајла.
+
+```bash
+admin@admin-virtualbox:/bin$ cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:102:105::/nonexistent:/usr/sbin/nologin
+systemd-timesync:x:103:106:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+syslog:x:104:111::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:112:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:115::/run/uuidd:/usr/sbin/nologin
+tcpdump:x:108:116::/nonexistent:/usr/sbin/nologin
+usbmux:x:109:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+dnsmasq:x:110:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin
+kernoops:x:111:65534:Kernel Oops Tracking Daemon,,,:/:/usr/sbin/nologin
+avahi:x:112:119:Avahi mDNS daemon,,,:/run/avahi-daemon:/usr/sbin/nologin
+cups-pk-helper:x:113:120:user for cups-pk-helper service,,,:/home/cups-pk-helper:/usr/sbin/nologin
+rtkit:x:114:121:RealtimeKit,,,:/proc:/usr/sbin/nologin
+whoopsie:x:115:122::/nonexistent:/bin/false
+fwupd-refresh:x:116:123:fwupd-refresh user,,,:/run/systemd:/usr/sbin/nologin
+saned:x:117:125::/var/lib/saned:/usr/sbin/nologin
+colord:x:118:126:colord colour management daemon,,,:/var/lib/colord:/usr/sbin/nologin
+sddm:x:119:127:Simple Desktop Display Manager:/var/lib/sddm:/bin/false
+geoclue:x:120:128::/var/lib/geoclue:/usr/sbin/nologin
+pulse:x:121:129:PulseAudio daemon,,,:/run/pulse:/usr/sbin/nologin
+hplip:x:122:7:HPLIP system user,,,:/run/hplip:/bin/false
+admin:x:1000:1000:admin:/home/admin:/bin/bash
+mysql:x:123:132:MySQL Server,,,:/nonexistent:/bin/false
+sshd:x:124:65534::/run/sshd:/usr/sbin/nologin
+ntp:x:125:133::/nonexistent:/usr/sbin/nologin
+```
+
+Једини корисници који имају shell су:
+
+- `root`, и то `/bin/bash`
+- `sync`, и то `/bin/sync`
+- `admin`, и то `/bin/bash`
+
+#### д.4.2 Reviewing the shadow file
+
+Све лозинке у `/etc/passwd` су хеширане.
+
+Садржај `/etc/shadow` изгледа овако:
+
+```bash
+admin@admin-virtualbox:/bin$ sudo cat /etc/shadow
+[sudo] password for admin:
+root:$y$j9T$LzAM7Bku1KPtjXT45Vgx70$ww3.7lmFS8pfRZUOW9NvJNnK.k1X35j96w7Cr6oD3OA:19850:0:99999:7:::
+daemon:*:19769:0:99999:7:::
+bin:*:19769:0:99999:7:::
+sys:*:19769:0:99999:7:::
+sync:*:19769:0:99999:7:::
+games:*:19769:0:99999:7:::
+man:*:19769:0:99999:7:::
+lp:*:19769:0:99999:7:::
+mail:*:19769:0:99999:7:::
+news:*:19769:0:99999:7:::
+uucp:*:19769:0:99999:7:::
+proxy:*:19769:0:99999:7:::
+www-data:*:19769:0:99999:7:::
+backup:*:19769:0:99999:7:::
+list:*:19769:0:99999:7:::
+irc:*:19769:0:99999:7:::
+gnats:*:19769:0:99999:7:::
+nobody:*:19769:0:99999:7:::
+systemd-network:*:19769:0:99999:7:::
+systemd-resolve:*:19769:0:99999:7:::
+messagebus:*:19769:0:99999:7:::
+systemd-timesync:*:19769:0:99999:7:::
+syslog:*:19769:0:99999:7:::
+_apt:*:19769:0:99999:7:::
+tss:*:19769:0:99999:7:::
+uuidd:*:19769:0:99999:7:::
+tcpdump:*:19769:0:99999:7:::
+usbmux:*:19769:0:99999:7:::
+dnsmasq:*:19769:0:99999:7:::
+kernoops:*:19769:0:99999:7:::
+avahi:*:19769:0:99999:7:::
+cups-pk-helper:*:19769:0:99999:7:::
+rtkit:*:19769:0:99999:7:::
+whoopsie:*:19769:0:99999:7:::
+fwupd-refresh:*:19769:0:99999:7:::
+saned:*:19769:0:99999:7:::
+colord:*:19769:0:99999:7:::
+sddm:*:19769:0:99999:7:::
+geoclue:*:19769:0:99999:7:::
+pulse:*:19769:0:99999:7:::
+hplip:*:19769:0:99999:7:::
+admin:$6$ReFz5oqz6qJw13ly$HcS9/qOfBt88ZANfSd0vw6pG8jYMSGATSknIn8X4X4X/IpqQ0K.cWW3kJtbxSg5g3wtTCRpps4EWoDhbybpCG.:19830:0:99999:7:::
+mysql:!:19850:0:99999:7:::
+sshd:*:19850:0:99999:7:::
+ntp:*:19851:0:99999:7:::
+```
+
+`root` лозинка почиње са `$y$` што значи да користи `yescrypt` алгоритам који
+је много бољи у спречавању offline напада.
+
+`admin` лозинка почиње са `$6$` тј. SHA-512 што је јак алгоритам.
+
+Остали налози су `*` тј. login није могућ на овим налозима.
+
+```bash
+admin@admin-virtualbox:/bin$ cat /etc/pam.d/common-password
+#
+# /etc/pam.d/common-password - password-related modules common to all services
+#
+# This file is included from other service-specific PAM config files,
+# and should contain a list of modules that define the services to be
+# used to change user passwords.  The default is pam_unix.
+
+# Explanation of pam_unix options:
+# The "yescrypt" option enables
+#hashed passwords using the yescrypt algorithm, introduced in Debian
+#11.  Without this option, the default is Unix crypt.  Prior releases
+#used the option "sha512"; if a shadow password hash will be shared
+#between Debian 11 and older releases replace "yescrypt" with "sha512"
+#for compatibility .  The "obscure" option replaces the old
+#`OBSCURE_CHECKS_ENAB' option in login.defs.  See the pam_unix manpage
+#for other options.
+
+# As of pam 1.0.1-6, this file is managed by pam-auth-update by default.
+# To take advantage of this, it is recommended that you configure any
+# local modules either before or after the default block, and use
+# pam-auth-update to manage selection of other modules.  See
+# pam-auth-update(8) for details.
+
+# here are the per-package modules (the "Primary" block)
+password        [success=1 default=ignore]      pam_unix.so obscure yescrypt
+# here's the fallback if no module succeeds
+password        requisite                       pam_deny.so
+# prime the stack with a positive return value if there isn't one already;
+# this avoids us returning an error just because nothing sets a success code
+# since the modules above will each just jump around
+password        required                        pam_permit.so
+# and here are more per-package modules (the "Additional" block)
+password        optional        pam_gnome_keyring.so
+# end of pam-auth-update config
+```
+
+Користи се `yescrypt`.
+
+Добављање лозинке помоћу John-а:
+
+```bash
+admin@admin-virtualbox:/bin$ john
+    [...]
+--format=NAME              force hash type NAME: descrypt/bsdicrypt/md5crypt/
+                           bcrypt/LM/AFS/tripcode/dummy/crypt
+    [...]
+admin@admin-virtualbox:/bin$ sudo john /etc/shadow
+Created directory: /root/.john
+Loaded 1 password hash (crypt, generic crypt(3) [?/64])
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+1234             (admin)
+1g 0:00:00:05 100% 2/3 0.1945g/s 588.5p/s 588.5c/s 588.5C/s 123456..pepper
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed
+admin@admin-virtualbox:/bin$ sudo john /etc/shadow --show
+admin:1234:19830:0:99999:7:::
+```
+
+`1234` је лозинка admin налога.
+
+#### д.4.3 Reviewing the sudo configuration
+
+```bash
+admin@admin-virtualbox:/bin$ sudo egrep -v '^#|^$' /etc/sudoers
+Defaults        env_reset
+Defaults        mail_badpass
+Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+Defaults        use_pty
+root    ALL=(ALL:ALL) ALL
+%admin ALL=(ALL) ALL
+%sudo   ALL=(ALL:ALL) ALL
+@includedir /etc/sudoers.d
+```
+
+Видимо да `admin` група може приступити свим налозима (укључујући и root)
+налогу, али мора имати лозинку.
+
+### д.5 Services review
+
 ## е. Извлачење хеш лозинке
