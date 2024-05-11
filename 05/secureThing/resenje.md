@@ -890,4 +890,242 @@ root    ALL=(ALL:ALL) ALL
 
 ### д.5 Services review
 
+#### д.5.1 Identifying running services
+
+```bash
+admin@admin-virtualbox:~$ lsof -i UDP -n -P
+admin@admin-virtualbox:~$ lsof -i TCP -n -P
+COMMAND  PID  USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+uvicorn 1681 admin    3u  IPv4  27557      0t0  TCP 127.0.0.1:8000 (LISTEN)
+python3 1683 admin    3u  IPv4  27557      0t0  TCP 127.0.0.1:8000 (LISTEN)
+python3 1683 admin   18u  IPv4  27593      0t0  TCP 127.0.0.1:36812->127.0.0.1:3306 (ESTABLISHED)
+```
+
+Немамо UDP сервисе, а за TCP су сервиси API сервера. Nginx и MariaDB нису покренути као сервиси те се не налазе овде. Чак ни sshd није покренут као сервис.
+Да су заиста покренути њихови процеси, види се овде:
+
+```bash
+admin@admin-virtualbox:~$ ps -edf | grep ngin
+root        1690       1  0 14:06 ?        00:00:00 nginx: master process nginx
+nobody      1691    1690  0 14:06 ?        00:00:00 nginx: worker process
+admin       1700    1458  0 14:08 pts/0    00:00:00 grep --color=auto ngin
+admin@admin-virtualbox:~$ ps -edf | grep mari
+mysql        651       1  0 14:00 ?        00:00:02 /usr/sbin/mariadbd
+admin       1704    1458  0 14:08 pts/0    00:00:00 grep --color=auto mari
+admin@admin-virtualbox:~$ ps -edf | grep sshd
+root         592       1  0 13:59 ?        00:00:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root        1379     592  0 14:00 ?        00:00:00 sshd: admin [priv]
+admin       1456    1379  0 14:00 ?        00:00:01 sshd: admin@pts/0
+admin       1706    1458  0 14:08 pts/0    00:00:00 grep --color=auto sshd
+```
+
+#### д.5.2 OpenSSH
+
+```bash
+admin@admin-virtualbox:~$ cat /etc/ssh/sshd_config | grep PermitRootLogin
+#PermitRootLogin prohibit-password
+# the setting of "PermitRootLogin without-password".
+```
+
+Закоментарисано се. Потребно је ставити `no` како `root` не би могао приступити SSH јер је то опасно.
+
+Помоћу `protocol 2` се ограничава употреба на верзију 2 од SSH.
+
+Порт је 22, изменом порта на неку другу вредност отежава нападачима да лоцирају SSH сокет. Потребно је променити и порт у VirtualBox-овом port forwarding опцијама, као и конфигурацију у PuTTY-ју.
+
+Коначно, `AllowTcpForwarding` је постављен на `no`.
+
+Пре рестартовања ssh, добро је проверити да нема грешака у конфигурацији:
+
+```
+sshd -t
+```
+
+Рестартовање на системима који користе systemd:
+
+```
+sudo systemctl restart sshd
+```
+
+#### д.5.3 MySQL
+
+У конфигурацији `/etc/mysql/my.cnf` додато је:
+
+```conf
+[mysqld]
+bind-address = 127.0.0.1
+```
+
+Конекција (лозинка је `root`):
+
+```bash
+sudo mariadb -u root -proot
+```
+
+```bash
+MariaDB [(none)]> select @@version;
++----------------------------------+
+| @@version                        |
++----------------------------------+
+| 10.6.16-MariaDB-0ubuntu0.22.04.1 |
++----------------------------------+
+1 row in set (0.000 sec)
+```
+
+За списак рањивости на овој верзији, погледати рањивости које су
+печоване у новијим верзијама, на овом сајту: https://mariadb.com/kb/en/security/.
+
+```bash
+MariaDB [(none)]> select host, user, password from mysql.user;
++-----------+-------------+-------------------------------------------+
+| Host      | User        | Password                                  |
++-----------+-------------+-------------------------------------------+
+| localhost | mariadb.sys |                                           |
+| localhost | root        | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B |
+| localhost | mysql       | invalid                                   |
++-----------+-------------+-------------------------------------------+
+3 rows in set (0.045 sec)
+```
+
+Видимо да `root` има лозинку која користи нови алгоритам за енкрипцију.
+
+Крековање лозинке помоћу John-а је било једноставно с обзиром да је лозинка `root` и коришћен је `mysql-sha1`.
+
+```
+sudo unshadow ./mysql-password /etc/shadow > mypasswd
+john mypasswd --format=crypt
+
+Loaded 1 password hash (crypt, generic crypt(3) [?/64])
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+0g 0:00:00:08 57% 1/3 0g/s 33.21p/s 33.21c/s 33.21C/s Drroot..Root02
+```
+
+#### д.5.4 Nginx
+
+Прво да видимо под којим корисником је покренут nginx:
+
+```bash
+admin@admin-virtualbox:~$ sudo lsof -nP -i
+[sudo] password for admin:
+COMMAND    PID            USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+systemd-r  335 systemd-resolve   13u  IPv4  21036      0t0  UDP 127.0.0.53:53
+systemd-r  335 systemd-resolve   14u  IPv4  21037      0t0  TCP 127.0.0.53:53 (LISTEN)
+avahi-dae  436           avahi   12u  IPv4  22158      0t0  UDP *:5353
+avahi-dae  436           avahi   13u  IPv6  22159      0t0  UDP *:5353
+avahi-dae  436           avahi   14u  IPv4  22160      0t0  UDP *:51154
+avahi-dae  436           avahi   15u  IPv6  22161      0t0  UDP *:58342
+NetworkMa  441            root   25u  IPv4  22484      0t0  UDP 10.0.2.15:68->10.0.2.2:67
+cupsd      537            root    7u  IPv4  22363      0t0  TCP 127.0.0.1:631 (LISTEN)
+cups-brow  667            root    7u  IPv4  23311      0t0  UDP *:631
+uvicorn   1681           admin    3u  IPv4  27557      0t0  TCP 127.0.0.1:8000 (LISTEN)
+python3   1683           admin    3u  IPv4  27557      0t0  TCP 127.0.0.1:8000 (LISTEN)
+python3   1683           admin   18u  IPv4  27593      0t0  TCP 127.0.0.1:36812->127.0.0.1:3306 (CLOSE_WAIT)
+nginx     1690            root    6u  IPv4  32986      0t0  TCP *:8300 (LISTEN)
+nginx     1691          nobody    6u  IPv4  32986      0t0  TCP *:8300 (LISTEN)
+sshd      1803            root    3u  IPv4  33416      0t0  TCP *:27 (LISTEN)
+sshd      1803            root    4u  IPv6  33418      0t0  TCP *:27 (LISTEN)
+sshd      1810            root    4u  IPv4  33430      0t0  TCP 10.0.2.15:27->10.0.2.2:51980 (ESTABLISHED)
+sshd      1845           admin    4u  IPv4  33430      0t0  TCP 10.0.2.15:27->10.0.2.2:51980 (ESTABLISHED)
+mariadbd  1959           mysql   20u  IPv4  34183      0t0  TCP 127.0.0.1:3306 (LISTEN)
+```
+
+Видимо `nginx` је под `root`. Ако погледамо конфигурацију:
+
+```nginx
+events {
+
+}
+
+http {
+        server {
+                listen 8300;
+
+                location /api/ {
+                        proxy_pass http://localhost:8000/;
+                }
+        }
+}
+```
+
+ту видимо да нема ништа за подешавање корисника. Додавањем
+
+```
+user www-data;
+```
+
+на почетку поправља ствари. Међутим, постоје две инстанце nginx-a. Прва је
+главни процес који не ради ништа већ се на основу њега fork-ују робови.
+
+Рестартовањем nginx сервера видимо:
+
+```bash
+admin@admin-virtualbox:~$ sudo lsof -nP -i
+COMMAND    PID            USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+systemd-r  335 systemd-resolve   13u  IPv4  21036      0t0  UDP 127.0.0.53:53
+systemd-r  335 systemd-resolve   14u  IPv4  21037      0t0  TCP 127.0.0.53:53 (LISTEN)
+avahi-dae  436           avahi   12u  IPv4  22158      0t0  UDP *:5353
+avahi-dae  436           avahi   13u  IPv6  22159      0t0  UDP *:5353
+avahi-dae  436           avahi   14u  IPv4  22160      0t0  UDP *:51154
+avahi-dae  436           avahi   15u  IPv6  22161      0t0  UDP *:58342
+NetworkMa  441            root   25u  IPv4  22484      0t0  UDP 10.0.2.15:68->10.0.2.2:67
+cupsd      537            root    7u  IPv4  22363      0t0  TCP 127.0.0.1:631 (LISTEN)
+cups-brow  667            root    7u  IPv4  23311      0t0  UDP *:631
+uvicorn   1681           admin    3u  IPv4  27557      0t0  TCP 127.0.0.1:8000 (LISTEN)
+python3   1683           admin    3u  IPv4  27557      0t0  TCP 127.0.0.1:8000 (LISTEN)
+python3   1683           admin   18u  IPv4  27593      0t0  TCP 127.0.0.1:36812->127.0.0.1:3306 (CLOSE_WAIT)
+sshd      1803            root    3u  IPv4  33416      0t0  TCP *:27 (LISTEN)
+sshd      1803            root    4u  IPv6  33418      0t0  TCP *:27 (LISTEN)
+sshd      1810            root    4u  IPv4  33430      0t0  TCP 10.0.2.15:27->10.0.2.2:51980 (ESTABLISHED)
+sshd      1845           admin    4u  IPv4  33430      0t0  TCP 10.0.2.15:27->10.0.2.2:51980 (ESTABLISHED)
+mariadbd  1959           mysql   20u  IPv4  34183      0t0  TCP 127.0.0.1:3306 (LISTEN)
+nginx     2443            root    6u  IPv4  35676      0t0  TCP *:8300 (LISTEN)
+nginx     2444        www-data    6u  IPv4  35676      0t0  TCP *:8300 (LISTEN)
+```
+
+Један процес је под www-data, али други је и даље root. Он мора бити root и
+он не ради ништа сем што се fork-ује.
+
+Токени се искључују тако што се се постави `server_tokens off` у конфигурацији.
+
+Не постоји никаква контрола и ограничавање ресурса што олакшава DoS нападе.
+Пожељно је додати директиве `client_body_buffer_size 1k`,
+`client_header_buffer_size 1k`, `client_max_body_size 1k`,
+`large_client_header_bufffers 2 1k`.
+
+Треба ограничити које HTTP методе веб сервер прихвата:
+
+```nginx
+location /api/ {
+    limit_except GET HEAD POST {
+        deny all;
+    }
+    ...
+}
+```
+
+#### д.5.5 Python Configuration
+
+Сам апи сервер нема конфигурације, а садржај у nginx-у је покривен претходном
+секцијом. TODO: Шта овде писати...?
+
+#### д.5.6 Crontab
+
+```bash
+admin@admin-virtualbox:~/Desktop/web-kangaroo/api$ sudo crontab -u root -l
+[sudo] password for admin:
+no crontab for root
+admin@admin-virtualbox:~/Desktop/web-kangaroo/api$ sudo crontab -u admin -l
+no crontab for admin
+```
+
+```
+admin@admin-virtualbox:/var/spool/cron$ sudo ls /var/spool/cron/crontabs/
+admin@admin-virtualbox:/var/spool/cron$
+```
+
+Видимо да немамо ниједан крон џоб.
+
 ## е. Извлачење хеш лозинке
+
+Описано је изнад.
