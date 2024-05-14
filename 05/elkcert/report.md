@@ -2,17 +2,17 @@
 
 Napravljen je minimalni _Python_ _Flask_ server sa _SQLAlchemy_ bindingom, deployovan pomoću _gunicorn_ WSGI servera sa _nginx_ _reverse proxy_.
 
-Server je deployovan na virtualnoj mašini sa Xubuntu 24.04 LTS operativnim sistemom. Pokušan je i Ubuntu 24.04 LTS Server koji dolazi bez grafičkog okruženja i minimalno instaliranih paketa, ali je bilo problema prilikom povezivanja mreže sa host računarom.
+Server je deployovan na virtuelnoj mašini sa Xubuntu 24.04 LTS operativnim sistemom. Pokušan je i Ubuntu 24.04 LTS Server koji dolazi bez grafičkog okruženja i minimalno instaliranih paketa, ali je bilo problema prilikom povezivanja mreže sa host računarom.
 
 Lozinka naloga je podešena na `starcraftrules`
 
 # Host <-> Guest
 
-Za povezivanje host računara sa mrežom virtualne mašine bilo je potrebno uključiti dodatni _Host-Only Adapter_ u podešavanjima.
+Za povezivanje host računara sa mrežom virtuelne mašine bilo je potrebno uključiti dodatni _Host-Only Adapter_ u podešavanjima.
 
 ![image](res/adapter.png)
 
-Na slici ispod je pokrenut server na virtualnoj mašini preko _gunicorn_ na portu 5000, sa podešenim _nginx_ koji prosleđuje zahteve sa defaultnog porta 80 na isti. _PowerShell_ konzola je na _host_ mašini i preko adrese 192.168.56.101 komunicira sa _guest_ mrežom.
+Na slici ispod je pokrenut server na virtuelnoj mašini preko _gunicorn_ na portu 5000, sa podešenim _nginx_ koji prosleđuje zahteve sa defaultnog porta 80 na isti. _PowerShell_ konzola je na _host_ mašini i preko adrese 192.168.56.101 komunicira sa _guest_ mrežom.
 
 ![image](res/host_guest.png)
 
@@ -44,7 +44,8 @@ Linux tester-VirtualBox 6.8.0-31-generic #31-Ubuntu SMP PREEMPT_DYNAMIC Sat Apr 
 ```
 
 Od trenutka pisanja (12.05.2024) ovo je najnovija _major_ verzija kernela.
-TODO vulnerabillity, [sajt](https://ubuntu.com/security/cves) baca 500
+
+Na [sajtu](https://ubuntu.com/security/cves) je za Ubuntu 24.04 LTS evidentirana jedna [kritična ranjivost](https://ubuntu.com/security/CVE-2024-3094), međutim ne izgleda da je bilo ko podložan ovoj ranjivosti.
 
 ## Time Management
 
@@ -55,7 +56,7 @@ Europe/Belgrade
 
 Korišćena vremenska zona koristi _daylight savings_, što može biti problem za sinhronizaciju logova. Umesto toga mogli bi koristiti  `Etc/UTC`.
 
-Takođe je preporučjivo koristiti NTP server. sa `ps -edf | grep ntp` vidimo da nije podrazumevano instaliran. Njega instaliramo sa `sudo apt get install` i onda vidimo:
+Takođe je preporučjivo koristiti NTP server. sa `ps -edf | grep ntp` vidimo da nije podrazumevano instaliran. Njega instaliramo sa `sudo apt install ntp` i onda vidimo:
 
 ```shell
 tester@tester-VirtualBox:~$ ps -edf | grep ntp
@@ -88,7 +89,7 @@ tester@tester-VirtualBox:~$ dpkg --list | wc --lines
 1290
 ```
 
-Poređenja radi, ista komanda je pokrenuta na Ubuntu 24.04 Server virtualnoj mašini, gde je dobijeno 742 paketa.
+Poređenja radi, ista komanda je pokrenuta na Ubuntu 24.04 Server virtuelnoj mašini, gde je dobijeno 742 paketa.
 
 Preporuka je imati što manje instaliranih paketa (manji _attack surface_) i redovno ažurirati pakete (`sudo apt update`).
 
