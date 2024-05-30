@@ -8,6 +8,7 @@ import (
 )
 
 type NamespaceStore struct {
+	client *capi.Client
 }
 
 type NamespaceRelationUnionElementUserset struct {
@@ -38,12 +39,19 @@ func NewNamespaceStore() *NamespaceStore {
 // Abstracting ConsulDB through NamespaceStore.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-func (nss *NamespaceStore) Get(key string) string {
-	client, err := capi.NewClient(capi.DefaultConfig())
-	if err != nil {
-		panic(err)
+func (nss *NamespaceStore) openClientIfNeeded() {
+	if nss.client == nil {
+		client, err := capi.NewClient(capi.DefaultConfig())
+		if err != nil {
+			panic(err)
+		}
+		nss.client = client
 	}
-	kv := client.KV()
+}
+
+func (nss *NamespaceStore) Get(key string) string {
+	nss.openClientIfNeeded()
+	kv := nss.client.KV()
 
 	pair, _, err := kv.Get(key, nil)
 	if err != nil {
@@ -53,14 +61,11 @@ func (nss *NamespaceStore) Get(key string) string {
 }
 
 func (nss *NamespaceStore) Put(key string, val string) {
-	client, err := capi.NewClient(capi.DefaultConfig())
-	if err != nil {
-		panic(err)
-	}
-	kv := client.KV()
+	nss.openClientIfNeeded()
+	kv := nss.client.KV()
 
 	p := &capi.KVPair{Key: key, Value: []byte(val)}
-	_, err = kv.Put(p, nil)
+	_, err := kv.Put(p, nil)
 	if err != nil {
 		panic(err)
 	}

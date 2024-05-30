@@ -18,12 +18,25 @@ type ACLDirective struct {
 
 type ACL struct {
 	fname string
+	db    *leveldb.DB
 }
 
 func NewACL(fname string) *ACL {
 	acl := new(ACL)
 	acl.fname = fname
+
+	db, err := leveldb.OpenFile(acl.fname, nil)
+	if err != nil {
+		panic(err)
+	}
+	acl.db = db
 	return acl
+}
+
+func (acl *ACL) Close() {
+	if acl.db != nil {
+		acl.db.Close()
+	}
 }
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
@@ -32,13 +45,7 @@ func NewACL(fname string) *ACL {
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
 func (acl *ACL) Get(key string) string {
-	db, err := leveldb.OpenFile(acl.fname, nil)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	val, err := db.Get([]byte(key), nil)
+	val, err := acl.db.Get([]byte(key), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -47,26 +54,14 @@ func (acl *ACL) Get(key string) string {
 }
 
 func (acl *ACL) Put(key string, val string) {
-	db, err := leveldb.OpenFile(acl.fname, nil)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	err = db.Put([]byte(key), []byte(val), nil)
+	err := acl.db.Put([]byte(key), []byte(val), nil)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (acl *ACL) Has(key string) bool {
-	db, err := leveldb.OpenFile(acl.fname, nil)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	has, err := db.Has([]byte(key), nil)
+	has, err := acl.db.Has([]byte(key), nil)
 	if err != nil {
 		panic(err)
 	}

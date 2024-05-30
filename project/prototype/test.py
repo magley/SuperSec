@@ -1,6 +1,6 @@
 import requests
 import json
-
+import time
 
 def basic_test(o, r, u, expecting: bool):
     url = "http://127.0.0.1:5000"
@@ -19,6 +19,8 @@ def basic_test(o, r, u, expecting: bool):
 
 
 # --------------------------------------------------
+
+start = time.time()
 
 basic_test("basic:file1", "owner", "1", True)
 basic_test("basic:file1", "editor", "1", True)
@@ -65,3 +67,6 @@ basic_test("basic:file3", "viewer", "2", False)
 basic_test("basic:file3", "commenter", "2", True)
 
 # --------------------------------------------------
+
+end = time.time()
+print(f"All tests passed in {end - start}s")

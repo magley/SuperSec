@@ -59,6 +59,7 @@ func main() {
 
 	glo_acl = NewACL("./data/acl/")
 	glo_acl.AddFromFile("./basic.acl")
+	defer glo_acl.Close()
 
 	http.HandleFunc("/acl", aclUpdate)
 	http.HandleFunc("/acl/check", aclQuery)
