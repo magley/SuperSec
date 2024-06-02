@@ -1,4 +1,4 @@
-package main
+package acl
 
 import (
 	"bufio"
@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/syndtr/goleveldb/leveldb"
+
+	ns "lesotho/namespace"
 )
 
 type ACLDirective struct {
@@ -110,7 +112,7 @@ func removeDuplicates(li []string) []string {
 	return slices.Compact(li)
 }
 
-func (acl *ACL) Check(object string, relation string, user string, nss *NamespaceStore) bool {
+func (acl *ACL) Check(object string, relation string, user string, nss *ns.NamespaceStore) bool {
 	directive := fmt.Sprintf("%s#%s@%s", object, relation, user)
 
 	if acl.Has(directive) {

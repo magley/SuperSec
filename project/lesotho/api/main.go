@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"lesotho/acl"
+	ns "lesotho/namespace"
 	"log"
 	"net/http"
 )
 
-var glo_acl *ACL
-var glo_nss *NamespaceStore
+var glo_acl *acl.ACL
+var glo_nss *ns.NamespaceStore
 
 type AuthorizationResponse struct {
 	Authorized bool `json:"authorized"`
@@ -19,7 +21,7 @@ func aclUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var t ACLDirective
+	var t acl.ACLDirective
 	err := decoder.Decode(&t)
 	if err != nil {
 		panic(err)
@@ -34,7 +36,7 @@ func aclQuery(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 
-	t := ACLDirective{
+	t := acl.ACLDirective{
 		Object:   r.URL.Query().Get("object"),
 		Relation: r.URL.Query().Get("relation"),
 		User:     r.URL.Query().Get("user"),
@@ -54,10 +56,10 @@ func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	glo_nss = NewNamespaceStore()
+	glo_nss = ns.NewNamespaceStore()
 	glo_nss.AddFromFile("basic", "./basic.json")
 
-	glo_acl = NewACL("./data/acl/")
+	glo_acl = acl.NewACL("./data/acl/")
 	glo_acl.AddFromFile("./basic.acl")
 	defer glo_acl.Close()
 
