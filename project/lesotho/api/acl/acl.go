@@ -126,21 +126,8 @@ func (acl *ACL) Check(object string, relation string, user string, nss *ns.Names
 	namespaceName := parts[0]
 	relations := nss.GetRelations(namespaceName)
 
-	G := make(map[string][]string)
-
-	for relName, relContent := range relations {
-		G[relName] = make([]string, 0)
-
-		if relContent.Union != nil {
-			unionElements := *relContent.Union
-			for _, unionElement := range unionElements {
-				if unionElement.ComputedUserset != nil {
-					child := unionElement.ComputedUserset.Relation
-					G[relName] = append(G[relName], child)
-				}
-			}
-		}
-	}
+	G := ns.NewNamespaceGraph()
+	G.RebuildFromNamespaceRelations(relations)
 
 	relationParents := make([]string, 0)
 	queue := []string{relation}
@@ -151,7 +138,7 @@ func (acl *ACL) Check(object string, relation string, user string, nss *ns.Names
 
 		// Get direct parent of e
 		dp := make([]string, 0)
-		for k, v := range G {
+		for k, v := range G.G {
 			if e == k {
 				dp = append(dp, v...)
 			}
