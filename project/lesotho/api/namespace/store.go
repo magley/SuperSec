@@ -8,11 +8,13 @@ import (
 )
 
 type NamespaceStore struct {
-	client *capi.Client
+	client     *capi.Client
+	graphCache *NamespaceGraphCache
 }
 
-func NewNamespaceStore() *NamespaceStore {
+func NewNamespaceStore(graphCache *NamespaceGraphCache) *NamespaceStore {
 	nss := new(NamespaceStore)
+	nss.graphCache = graphCache
 	return nss
 }
 
@@ -57,8 +59,9 @@ func (nss *NamespaceStore) Put(key string, val string) {
 // High level methods.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-func (nss *NamespaceStore) Add(namespaceName string, namespacJson string) {
-	nss.Put(namespaceName, namespacJson)
+func (nss *NamespaceStore) Add(namespaceName string, namespaceJson string) {
+	nss.Put(namespaceName, namespaceJson)
+	nss.revalidateGraphCache(namespaceName, namespaceJson)
 }
 
 func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname string) {
@@ -71,7 +74,10 @@ func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname 
 
 func (nss *NamespaceStore) GetRelations(namespaceName string) map[string]NamespaceRelation {
 	namespaceJson := nss.Get(namespaceName)
+	return nss.GetRelationsFromJson(namespaceJson)
+}
 
+func (nss *NamespaceStore) GetRelationsFromJson(namespaceJson string) map[string]NamespaceRelation {
 	var namespace Namespace
 	err := json.Unmarshal([]byte(namespaceJson), &namespace)
 	if err != nil {
@@ -81,4 +87,24 @@ func (nss *NamespaceStore) GetRelations(namespaceName string) map[string]Namespa
 	relations := namespace.Relations
 
 	return relations
+}
+
+func (nss *NamespaceStore) revalidateGraphCache(namespaceName string, namespaceJson string) {
+	graph, ok := nss.graphCache.Get(namespaceName)
+	if ok {
+		relations := nss.GetRelationsFromJson(namespaceJson)
+		graph.RebuildFromNamespaceRelations(relations)
+		nss.graphCache.Put(namespaceName, graph)
+	}
+}
+
+func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) *NamespaceGraph {
+	graph, ok := nss.graphCache.Get(namespaceName)
+	if !ok {
+		graph = NewNamespaceGraph()
+		relations := nss.GetRelations(namespaceName)
+		graph.RebuildFromNamespaceRelations(relations)
+		nss.graphCache.Put(namespaceName, graph)
+	}
+	return graph
 }

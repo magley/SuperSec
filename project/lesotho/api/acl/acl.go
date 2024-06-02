@@ -124,10 +124,7 @@ func (acl *ACL) Check(object string, relation string, user string, nss *ns.Names
 		panic("object in an ACL directive must have the following structure: name:instance")
 	}
 	namespaceName := parts[0]
-	relations := nss.GetRelations(namespaceName)
-
-	G := ns.NewNamespaceGraph()
-	G.RebuildFromNamespaceRelations(relations)
+	G := nss.GetNamespaceGraph(namespaceName)
 
 	relationParents := make([]string, 0)
 	queue := []string{relation}
