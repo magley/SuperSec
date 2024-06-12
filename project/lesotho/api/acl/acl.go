@@ -55,8 +55,8 @@ func (acl *ACL) Get(key string) string {
 	return string(val)
 }
 
-func (acl *ACL) Put(key string, val string) {
-	err := acl.db.Put([]byte(key), []byte(val), nil)
+func (acl *ACL) Put(key string) {
+	err := acl.db.Put([]byte(key), []byte{}, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +76,7 @@ func (acl *ACL) Has(key string) bool {
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
 func (acl *ACL) addDirective(directive string) {
-	acl.Put(directive, "")
+	acl.Put(directive)
 }
 
 func (acl *ACL) Add(object string, relation string, user string) {

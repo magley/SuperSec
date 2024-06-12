@@ -1,7 +1,5 @@
 package namespace
 
-import "fmt"
-
 // NamespaceGraph is a graph data structure describing a namespace object.
 type NamespaceGraph struct {
 	// Relations is a JSON-like map representing the namespace.
@@ -32,7 +30,5 @@ func (g *NamespaceGraph) RebuildFromNamespaceRelations(relations map[string]Name
 				}
 			}
 		}
-
-		fmt.Printf("%s %+v\n", relName, relContent)
 	}
 }
