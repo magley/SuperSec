@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"log"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -100,11 +99,6 @@ func (acl *ACL) AddFromFile(aclDataFname string) {
 	}
 }
 
-func removeDuplicates(li []string) []string {
-	slices.Sort(li)
-	return slices.Compact(li)
-}
-
 func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 	directive := aclDirective.String()
 
@@ -148,8 +142,14 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 		queue = append(queue, dp...)
 	}
 
-	relationParents = removeDuplicates(relationParents)
+	parentsChecked := map[string]bool{}
 	for _, r := range relationParents {
+		_, alreadyUsed := parentsChecked[r]
+		if alreadyUsed {
+			continue
+		}
+		parentsChecked[r] = true
+
 		aclD := newACLDirectiveWithoutValidation(aclDirective.Object, r, aclDirective.User)
 		if acl.Has(aclD.String()) {
 			return true
