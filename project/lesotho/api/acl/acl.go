@@ -2,7 +2,7 @@ package acl
 
 import (
 	"bufio"
-	"fmt"
+	"log"
 	"os"
 	"slices"
 	"strings"
@@ -11,28 +11,6 @@ import (
 
 	ns "lesotho/namespace"
 )
-
-type ACLDirective struct {
-	Object   string
-	Relation string
-	User     string
-}
-
-func (d *ACLDirective) String() string {
-	return fmt.Sprintf("%s#%s@%s", d.Object, d.Relation, d.User)
-}
-
-func NewACLDirective(object string, relation string, user string) *ACLDirective {
-	aclDirective := new(ACLDirective)
-
-	// TODO: Validation
-
-	aclDirective.Object = object
-	aclDirective.Relation = relation
-	aclDirective.User = user
-
-	return aclDirective
-}
 
 type ACL struct {
 	fname string
@@ -164,7 +142,13 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 
 	relationParents = removeDuplicates(relationParents)
 	for _, r := range relationParents {
-		aclD := NewACLDirective(aclDirective.Object, r, aclDirective.User)
+		aclD, err := NewACLDirective(aclDirective.Object, r, aclDirective.User)
+
+		if err != nil {
+			log.Printf(err.Error())
+			continue
+		}
+
 		if acl.Has(aclD.String()) {
 			return true
 		}
