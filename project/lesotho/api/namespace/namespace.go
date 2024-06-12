@@ -10,7 +10,7 @@ type NamespaceRelation struct {
 }
 
 type NamespaceRelationUnionElement struct {
-	Self            *map[string]interface{}               `json:"self,omitempty"`
+	This            *map[string]interface{}               `json:"this,omitempty"`
 	ComputedUserset *NamespaceRelationUnionElementUserset `json:"computed_userset,omitempty"`
 }
 
