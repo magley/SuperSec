@@ -10,17 +10,29 @@ def basic_test(o, r, u, expecting: bool):
         "user": u,
     }
     resp = requests.get(f"{url}/acl/check", payload)
-    got = json.loads(resp.content.decode())["authorized"]
 
-    if expecting != got:
-        print(payload)
-        print(f"Expected {expecting}, got {got}")
-        raise Exception("test failed")
+    try:
+        got = json.loads(resp.content.decode())["authorized"]
 
+        if expecting != got:
+            print(payload)
+            print(f"Expected {expecting}, got {got}")
+            raise Exception("test failed")
+    except Exception:
+        if expecting == True:
+            print(payload)
+            print(f"Expected {expecting}, got {got}")
+            raise Exception("test failed")
+    
 
 # --------------------------------------------------
 
 start = time.time()
+
+basic_test("basic:file1:a", "owner", "1", False)
+basic_test("badNamespace:file1", "owner", "1", False)
+
+# --------------------------------------------------
 
 basic_test("basic:file1", "owner", "1", True)
 basic_test("basic:file1", "editor", "1", True)

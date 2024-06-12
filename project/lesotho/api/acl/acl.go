@@ -117,7 +117,11 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 		panic("object in an ACL directive must have the following structure: name:instance")
 	}
 	namespaceName := parts[0]
-	G := nss.GetNamespaceGraph(namespaceName)
+	G, err := nss.GetNamespaceGraph(namespaceName)
+	if err != nil {
+		log.Printf("Could not build graph from namespace %s: %s\n", namespaceName, err.Error())
+		return false
+	}
 
 	relationParents := make([]string, 0)
 	queue := []string{aclDirective.Relation}

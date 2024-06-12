@@ -2,6 +2,7 @@ package namespace
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	capi "github.com/hashicorp/consul/api"
@@ -33,15 +34,18 @@ func (nss *NamespaceStore) openClientIfNeeded() {
 	}
 }
 
-func (nss *NamespaceStore) Get(key string) string {
+func (nss *NamespaceStore) Get(key string) (string, error) {
 	nss.openClientIfNeeded()
 	kv := nss.client.KV()
 
 	pair, _, err := kv.Get(key, nil)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return string(pair.Value)
+	if pair == nil {
+		return "", fmt.Errorf("namespace %s not found in namespace store", key)
+	}
+	return string(pair.Value), nil
 }
 
 func (nss *NamespaceStore) Put(key string, val string) {
@@ -72,9 +76,12 @@ func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname 
 	nss.Add(namespaceName, string(data))
 }
 
-func (nss *NamespaceStore) GetRelations(namespaceName string) map[string]NamespaceRelation {
-	namespaceJson := nss.Get(namespaceName)
-	return nss.GetRelationsFromJson(namespaceJson)
+func (nss *NamespaceStore) GetRelations(namespaceName string) (map[string]NamespaceRelation, error) {
+	namespaceJson, err := nss.Get(namespaceName)
+	if err != nil {
+		return nil, err
+	}
+	return nss.GetRelationsFromJson(namespaceJson), nil
 }
 
 func (nss *NamespaceStore) GetRelationsFromJson(namespaceJson string) map[string]NamespaceRelation {
@@ -102,22 +109,31 @@ func (nss *NamespaceStore) revalidateGraphCache(namespaceName string, namespaceJ
 	}
 }
 
-func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) *NamespaceGraph {
+func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) (*NamespaceGraph, error) {
 	if nss.graphCache == nil {
 		return nss.buildGraph(namespaceName)
 	} else {
 		graph, ok := nss.graphCache.Get(namespaceName)
 		if !ok {
-			graph = nss.buildGraph(namespaceName)
+			graph_, err := nss.buildGraph(namespaceName)
+			if err != nil {
+				return nil, err
+			}
+			graph = graph_ // This is neccessary because without graph_, the
+			// regular graph gets redeclared since it's in an inner scope.
 			nss.graphCache.Put(namespaceName, graph)
 		}
-		return graph
+		return graph, nil
 	}
 }
 
-func (nss *NamespaceStore) buildGraph(namespaceName string) *NamespaceGraph {
+func (nss *NamespaceStore) buildGraph(namespaceName string) (*NamespaceGraph, error) {
 	graph := NewNamespaceGraph()
-	relations := nss.GetRelations(namespaceName)
+	relations, err := nss.GetRelations(namespaceName)
+	if err != nil {
+		return nil, err
+	}
+
 	graph.RebuildFromNamespaceRelations(relations)
-	return graph
+	return graph, nil
 }
