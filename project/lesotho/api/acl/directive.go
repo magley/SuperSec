@@ -15,13 +15,25 @@ type ACLDirective struct {
 
 // Validate checks if any field in the directive contains illegal characters.
 func (d *ACLDirective) Validate() error {
-	if strings.ContainsAny(d.Object, "#@") {
+	objectParts := strings.Split(d.Object, ":")
+
+	if len(objectParts) != 2 {
+		return fmt.Errorf("field object (%s) in ACLDirective has invalid format", d.Object)
+	}
+
+	justNamespace := objectParts[0]
+	justObject := objectParts[1]
+
+	if strings.ContainsAny(justNamespace, ":#@") {
 		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
 	}
-	if strings.ContainsAny(d.Relation, "#@") {
+	if strings.ContainsAny(justObject, ":#@") {
+		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
+	}
+	if strings.ContainsAny(d.Relation, ":#@") {
 		return fmt.Errorf("field relation (%s) in ACLDirective contains invalid character", d.Relation)
 	}
-	if strings.ContainsAny(d.User, "#@") {
+	if strings.ContainsAny(d.User, ":#@") {
 		return fmt.Errorf("field user (%s) in ACLDirective contains invalid character", d.User)
 	}
 	return nil
