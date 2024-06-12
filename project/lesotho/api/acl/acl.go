@@ -18,6 +18,22 @@ type ACLDirective struct {
 	User     string
 }
 
+func (d *ACLDirective) String() string {
+	return fmt.Sprintf("%s#%s@%s", d.Object, d.Relation, d.User)
+}
+
+func NewACLDirective(object string, relation string, user string) *ACLDirective {
+	aclDirective := new(ACLDirective)
+
+	// TODO: Validation
+
+	aclDirective.Object = object
+	aclDirective.Relation = relation
+	aclDirective.User = user
+
+	return aclDirective
+}
+
 type ACL struct {
 	fname string
 	db    *leveldb.DB
@@ -79,9 +95,8 @@ func (acl *ACL) addDirective(directive string) {
 	acl.Put(directive)
 }
 
-func (acl *ACL) Add(object string, relation string, user string) {
-	directive := fmt.Sprintf("%s#%s@%s", object, relation, user)
-	acl.addDirective(directive)
+func (acl *ACL) Add(aclDirective ACLDirective) {
+	acl.addDirective(aclDirective.String())
 }
 
 func (acl *ACL) AddFromFile(aclDataFname string) {
@@ -112,14 +127,14 @@ func removeDuplicates(li []string) []string {
 	return slices.Compact(li)
 }
 
-func (acl *ACL) Check(object string, relation string, user string, nss *ns.NamespaceStore) bool {
-	directive := fmt.Sprintf("%s#%s@%s", object, relation, user)
+func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
+	directive := aclDirective.String()
 
 	if acl.Has(directive) {
 		return true
 	}
 
-	parts := strings.Split(object, ":")
+	parts := strings.Split(aclDirective.Object, ":")
 	if len(parts) != 2 {
 		panic("object in an ACL directive must have the following structure: name:instance")
 	}
@@ -127,7 +142,7 @@ func (acl *ACL) Check(object string, relation string, user string, nss *ns.Names
 	G := nss.GetNamespaceGraph(namespaceName)
 
 	relationParents := make([]string, 0)
-	queue := []string{relation}
+	queue := []string{aclDirective.Relation}
 
 	for len(queue) > 0 {
 		e := queue[0]
@@ -149,9 +164,8 @@ func (acl *ACL) Check(object string, relation string, user string, nss *ns.Names
 
 	relationParents = removeDuplicates(relationParents)
 	for _, r := range relationParents {
-		directive := fmt.Sprintf("%s#%s@%s", object, r, user)
-
-		if acl.Has(directive) {
+		aclD := NewACLDirective(aclDirective.Object, r, aclDirective.User)
+		if acl.Has(aclD.String()) {
 			return true
 		}
 	}

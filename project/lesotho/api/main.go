@@ -22,14 +22,17 @@ func aclUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var t acl.ACLDirective
-	err := decoder.Decode(&t)
+	var aclDirective acl.ACLDirective
+	err := decoder.Decode(&aclDirective)
 	if err != nil {
 		panic(err)
 	}
 
-	glo_acl.Add(t.Object, t.Relation, t.User)
-	log.Printf("Added %s#%s@%s to the ACL.\n", t.Object, t.Relation, t.User)
+	// TODO: Validation
+	log.Println("TODO: Validate ACL Directive at POST /acl")
+
+	glo_acl.Add(aclDirective)
+	log.Printf("Added %v to the ACL.\n", aclDirective)
 }
 
 func aclQuery(w http.ResponseWriter, r *http.Request) {
@@ -37,13 +40,13 @@ func aclQuery(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 
-	t := acl.ACLDirective{
-		Object:   r.URL.Query().Get("object"),
-		Relation: r.URL.Query().Get("relation"),
-		User:     r.URL.Query().Get("user"),
-	}
+	aclDirective := acl.NewACLDirective(
+		r.URL.Query().Get("object"),
+		r.URL.Query().Get("relation"),
+		r.URL.Query().Get("user"),
+	)
 
-	authorized := glo_acl.Check(t.Object, t.Relation, t.User, glo_nss)
+	authorized := glo_acl.Check(aclDirective, glo_nss)
 	result := AuthorizationResponse{Authorized: authorized}
 
 	w.Header().Set("Content-Type", "application/json")
