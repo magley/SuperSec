@@ -1,6 +1,6 @@
 import requests
 import json
-
+import time
 
 def basic_test(o, r, u, expecting: bool):
     url = "http://127.0.0.1:5000"
@@ -10,13 +10,27 @@ def basic_test(o, r, u, expecting: bool):
         "user": u,
     }
     resp = requests.get(f"{url}/acl/check", payload)
-    got = json.loads(resp.content.decode())["authorized"]
 
-    if expecting != got:
-        print(payload)
-        print(f"Expected {expecting}, got {got}")
-        raise Exception("test failed")
+    try:
+        got = json.loads(resp.content.decode())["authorized"]
 
+        if expecting != got:
+            print(payload)
+            print(f"Expected {expecting}, got {got}")
+            raise Exception("test failed")
+    except Exception:
+        if expecting == True:
+            print(payload)
+            print(f"Expected {expecting}, got {got}")
+            raise Exception("test failed")
+    
+
+# --------------------------------------------------
+
+start = time.time()
+
+basic_test("basic:file1:a", "owner", "1", False)
+basic_test("badNamespace:file1", "owner", "1", False)
 
 # --------------------------------------------------
 
@@ -65,3 +79,6 @@ basic_test("basic:file3", "viewer", "2", False)
 basic_test("basic:file3", "commenter", "2", True)
 
 # --------------------------------------------------
+
+end = time.time()
+print(f"All tests passed in {end - start}s")
