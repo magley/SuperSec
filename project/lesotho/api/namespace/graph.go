@@ -6,8 +6,9 @@ type NamespaceGraph struct {
 	//
 	// Key is the name of the relations e.g. "owner", "reviewer", "editor".
 	//
-	// Value is a list of child relations i.e. relations that "inherit" all
-	// permissions from this relation.
+	// Value is a list of parent relations i.e. relations that "inherit" all
+	// permissions from this relation. It probably makes more sense to call them
+	// child relations, though.
 	Relations map[string][]string
 }
 
@@ -25,8 +26,8 @@ func (g *NamespaceGraph) RebuildFromNamespaceRelations(relations map[string]Name
 			unionElements := *relContent.Union
 			for _, unionElement := range unionElements {
 				if unionElement.ComputedUserset != nil {
-					child := unionElement.ComputedUserset.Relation
-					g.Relations[relName] = append(g.Relations[relName], child)
+					parent := unionElement.ComputedUserset.Relation
+					g.Relations[relName] = append(g.Relations[relName], parent)
 				}
 			}
 		}
