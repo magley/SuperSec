@@ -13,7 +13,7 @@ type ACLDirective struct {
 	User     string
 }
 
-// Validate checks if any field in the directive contains illegale characters.
+// Validate checks if any field in the directive contains illegal characters.
 func (d *ACLDirective) Validate() error {
 	if strings.ContainsAny(d.Object, "#@") {
 		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)

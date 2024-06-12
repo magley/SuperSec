@@ -121,10 +121,17 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 
 	relationParents := make([]string, 0)
 	queue := []string{aclDirective.Relation}
+	queueUsed := map[string]bool{}
 
 	for len(queue) > 0 {
 		e := queue[0]
 		queue = queue[1:]
+
+		_, alreadyUsed := queueUsed[e]
+		if alreadyUsed {
+			continue
+		}
+		queueUsed[e] = true
 
 		// Get direct parent of e
 		dp := make([]string, 0)
@@ -136,8 +143,6 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 
 		relationParents = append(relationParents, dp...)
 		queue = append(queue, dp...)
-
-		queue = removeDuplicates(queue)
 	}
 
 	relationParents = removeDuplicates(relationParents)
@@ -145,7 +150,7 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 		aclD, err := NewACLDirective(aclDirective.Object, r, aclDirective.User)
 
 		if err != nil {
-			log.Printf(err.Error())
+			log.Print(err.Error())
 			continue
 		}
 
