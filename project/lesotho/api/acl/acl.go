@@ -135,10 +135,9 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 
 		// Get direct parent of e
 		dp := make([]string, 0)
-		for k, v := range G.Relations {
-			if e == k {
-				dp = append(dp, v...)
-			}
+		v, ok := G.Relations[e]
+		if ok {
+			dp = append(dp, v...)
 		}
 
 		relationParents = append(relationParents, dp...)
