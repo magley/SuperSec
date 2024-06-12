@@ -135,7 +135,7 @@ func (acl *ACL) Check(object string, relation string, user string, nss *ns.Names
 
 		// Get direct parent of e
 		dp := make([]string, 0)
-		for k, v := range G.G {
+		for k, v := range G.Relations {
 			if e == k {
 				dp = append(dp, v...)
 			}
