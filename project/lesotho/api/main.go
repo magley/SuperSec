@@ -8,7 +8,6 @@ import (
 	"net/http"
 )
 
-var glo_nsGraphCache *ns.NamespaceGraphCache
 var glo_acl *acl.ACL
 var glo_nss *ns.NamespaceStore
 
@@ -80,9 +79,9 @@ func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	glo_nsGraphCache = ns.NewNamespaceGraphCache()
+	namespaceGraphCache := ns.NewNamespaceGraphCache()
 
-	glo_nss = ns.NewNamespaceStore(glo_nsGraphCache)
+	glo_nss = ns.NewNamespaceStore(namespaceGraphCache)
 	glo_nss.AddFromFile("basic", "./basic.json")
 
 	glo_acl = acl.NewACL("./data/acl/")
