@@ -58,3 +58,13 @@ func NewACLDirective(object string, relation string, user string) (*ACLDirective
 
 	return aclDirective, nil
 }
+
+func newACLDirectiveWithoutValidation(object string, relation string, user string) *ACLDirective {
+	aclDirective := new(ACLDirective)
+
+	aclDirective.Object = object
+	aclDirective.Relation = relation
+	aclDirective.User = user
+
+	return aclDirective
+}

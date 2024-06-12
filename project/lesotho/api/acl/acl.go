@@ -150,13 +150,7 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 
 	relationParents = removeDuplicates(relationParents)
 	for _, r := range relationParents {
-		aclD, err := NewACLDirective(aclDirective.Object, r, aclDirective.User)
-
-		if err != nil {
-			log.Print(err.Error())
-			continue
-		}
-
+		aclD := newACLDirectiveWithoutValidation(aclDirective.Object, r, aclDirective.User)
 		if acl.Has(aclD.String()) {
 			return true
 		}
