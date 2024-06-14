@@ -214,10 +214,12 @@ onMounted(() => {
 
     // Specify the dimensions of the chart.
     const width = 928;
-    const height = 500;
-    const nodeRadius = 5;
-
-    const arrowH = 8.0;
+    const height = 520;
+    const nodeRadius = 15;
+    const nodeLabelSize = "10pt";
+    const nodeIconSize = 1.25; // Relative to node size.
+    const calcNodeRadius = (d) => d.type == 'role' ? nodeRadius : nodeRadius * 2; 
+    const arrowH = nodeRadius * 1.25;
 
     // Specify the color scale.
     const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -229,8 +231,8 @@ onMounted(() => {
 
     // Create a simulation with several forces.
     const simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(50))
-        .force("charge", d3.forceManyBody())
+        .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-1500))
         .force("x", d3.forceX())
         .force("y", d3.forceY());
 
@@ -240,7 +242,7 @@ onMounted(() => {
             .attr("width", "100%")
             .attr("height", "100%")
             .attr("viewBox", [-width / 2, -height / 2, width, height])
-            .attr("style", "max-width: 100%; height: auto;");
+            .attr("style", "max-width: 100%; height: 100%;");
 
     // Arrowhead marker definition. 
     svg
@@ -254,7 +256,7 @@ onMounted(() => {
         .attr('markerHeight', arrowH)
         .attr('orient', 'auto-start-reverse')
         .append('path')
-        .attr('d', d3.line()([[-arrowH, 0], [-arrowH, arrowH], [0, arrowH / 2]]))
+        .attr('d', d3.line()([[-arrowH-5, 0], [-arrowH-5, arrowH], [-5, arrowH / 2]]))
         .attr('stroke', 'rgb(140, 146, 156)')
         .attr('fill', 'rgb(140, 146, 156)');
 
@@ -270,30 +272,49 @@ onMounted(() => {
         .attr("stroke-dasharray", d => d.dashed ? "4" : null)
         .attr('marker-start', d => d.dashed ? 'url(#arrow)' : '');
 
+    // Node label.
     const nodeLabel = svg.append("g")
         .attr("id", "graph-node-label")
         .attr("class", "pointer-events-none")
         .selectAll("text")
         .data(nodes)
         .join("text")
-        .attr("dy", nodeRadius * 2.25)
+        .attr("dy", nodeRadius * 1.35)
         .attr("fill", "rgb(204, 209, 218)")
         .attr("text-anchor", "middle")
+        .attr("font-size", nodeLabelSize)
         .text(d => d.label);
 
+    // Node.
     const node = svg.append("g")
         .attr("id", "graph-node")
         .selectAll("circle")
         .data(nodes)
         .join("circle")
-        .attr("r", (d) => d.type == 'role' ? nodeRadius : nodeRadius * 2)
+        .attr("r", (d) => calcNodeRadius(d))
         .attr("fill", (d) => d.type == 'role' ? 'rgb(229, 113, 208)' : 'rgb(84, 154, 246)' );
+
+    // Node icon.
+    const nodeIcon = svg.append("g")
+        .attr("id", "graph-node-icon")
+        .selectAll("image")
+        .data(nodes)
+        .join("image")
+        .attr("href", (d) => d.type == 'role' ? "public/ico_user.png" : "public/ico_file.png")
+        .attr("width", (d) => calcNodeRadius(d) * nodeIconSize)
+        .attr("height", (d) => calcNodeRadius(d) * nodeIconSize)
+        .attr("x", (d) => -calcNodeRadius(d) * nodeIconSize / 2)
+        .attr("y", (d) => -calcNodeRadius(d) * nodeIconSize / 2);
 
     // Add a drag behavior.
     node.call(d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended));
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+    nodeIcon.call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
     
     // Set the position attributes of links and nodes each time the simulation ticks.
     simulation.on("tick", () => {
@@ -308,13 +329,16 @@ onMounted(() => {
             .attr("cy", d => d.y);
         nodeLabel
             .attr("x", d => d.x)
-            .attr("y", d => d.y + nodeRadius * 2.25);
+            .attr("y", d => d.y + nodeRadius * 1.35);
+        nodeIcon
+            .attr("x", d => d.x - calcNodeRadius(d) * nodeIconSize / 2)
+            .attr("y", d => d.y - calcNodeRadius(d) * nodeIconSize / 2);
     });
 
     // Reheat the simulation when drag starts, and fix the subject position.
     function dragstarted(event) {
         if (!event.active) {
-            simulation.alphaTarget(0.3).restart();
+            simulation.alphaTarget(0.2).restart();
         }
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
@@ -340,6 +364,7 @@ onMounted(() => {
         d3.select('#graph-link').attr('transform', e.transform);
         d3.select('#graph-node').attr('transform', e.transform);
         d3.select('#graph-node-label').attr('transform', e.transform);
+        d3.select('#graph-node-icon').attr('transform', e.transform);
     }
     let zoom = d3.zoom().on('zoom', (handleZoom));
     d3.select('svg').call(zoom);
@@ -349,12 +374,25 @@ onMounted(() => {
 </script>
 
 <template>
-<div id="my_dataviz"></div>
+<div id="body">
+    <h1 class="font">Lesotho</h1>
+    <div id="my_dataviz"></div>
+</div>
 </template>
 
 <style scoped>
 
-#my_dataviz {
+.font {
+    font-family: Garamond;
+    position: absolute;
+    font-size: 5em;
+    color:white;
+    font-weight: 100;
+    margin: 0;
+    padding: 0;
+}
+
+#body {
     background: rgb(30, 33, 42);
     background-image: url("bg.png");
     background-repeat: repeat;
