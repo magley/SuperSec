@@ -15,16 +15,8 @@ type AuthorizationResponse struct {
 	Authorized bool `json:"authorized"`
 }
 
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-}
-
 func aclUpdate(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
-	if r.Method == http.MethodOptions {
-		w.Header().Set("Access-Control-Allow-Headers", "content-type")
-		return
-	}
+	println("/acl")
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -52,7 +44,7 @@ func aclUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func aclQuery(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	println("/acl/check")
 	if r.Method != http.MethodGet {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -79,7 +71,7 @@ func aclQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	println("/namespace")
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
