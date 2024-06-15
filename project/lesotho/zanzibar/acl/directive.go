@@ -44,6 +44,10 @@ func (d *ACLDirective) String() string {
 	return fmt.Sprintf("%s#%s@%s", d.Object, d.Relation, d.User)
 }
 
+func (d *ACLDirective) ObjectUserString() string {
+	return fmt.Sprintf("%s-%s", d.Object, d.User)
+}
+
 func NewACLDirective(object string, relation string, user string) (*ACLDirective, error) {
 	aclDirective := new(ACLDirective)
 
@@ -67,4 +71,19 @@ func newACLDirectiveWithoutValidation(object string, relation string, user strin
 	aclDirective.User = user
 
 	return aclDirective
+}
+
+func NewACLDirectiveFromCanonicalString(canonical string) (*ACLDirective, error) {
+	parts := strings.Split(canonical, "#")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("canonical string (%s) has invalid format", canonical)
+	}
+	object := parts[0]
+	parts = strings.Split(parts[1], "@")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("canonical string (%s) has invalid format", canonical)
+	}
+	relation := parts[0]
+	user := parts[1]
+	return NewACLDirective(object, relation, user)
 }
