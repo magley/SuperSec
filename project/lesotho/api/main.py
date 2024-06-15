@@ -48,10 +48,17 @@ def acl_query():
     return response
 
 
-@app.route("/namespace", methods=["POST"])
+@app.route("/namespace", methods=["POST", "OPTIONS"])
 def namespace_update():
-    # TODO: Implement
     print(request.url)
     response = make_response_with_cors()
+    if request.method == "OPTIONS":
+        response.headers.add("Access-Control-Allow-Headers", "content-type")
+        return response
+
+    namespace = requests.post(f'{ZANZIBAR_URL}/namespace', json=request.get_json())
+    if (namespace.status_code == 400):
+        response.status_code = 400
+        response.set_data(namespace.content)
 
     return response

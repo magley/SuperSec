@@ -3,15 +3,18 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Input } from "./components/ui/input"
 import { X } from "lucide-react"
 import { useState } from "react"
-import { aclCheck, aclUpdate } from "./http/endpoints"
+import { aclCheck, aclUpdate, namespaceUpdate } from "./http/endpoints"
 import { useToast } from "./components/ui/use-toast"
 import axios, { AxiosError } from "axios"
+import { Separator } from "./components/ui/separator"
 
 function App() {
   const [namespace, setNamespace] = useState("")
   const [object, setObject] = useState("")
   const [relation, setRelation] = useState("")
   const [user, setUser] = useState("")
+
+  const [namespaceFile, setNamespaceFile] = useState<File | null>(null)
 
   const { toast } = useToast()
 
@@ -26,14 +29,14 @@ function App() {
     const namespaceObject = `${namespace}:${object}`
     aclCheck({object: namespaceObject, relation, user})
       .then(res => toast({
-        title: "Authorization result",
+        title: "ACL Check result",
         description: `${res.data.authorized ? "Yes" : "No"}, ${user} -> ${relation} of ${namespaceObject}`,
       }))
       // https://github.com/axios/axios/issues/3612#issuecomment-770224236
       .catch((err: Error | AxiosError) => {
         if (axios.isAxiosError(err) && err.response?.status === 400) {
           toast({
-            title: "Authorization failed",
+            title: "ACL Check failed",
             variant: "destructive",
             description: err.response.data as string
           })
@@ -52,13 +55,13 @@ function App() {
     const namespaceObject = `${namespace}:${object}`
     aclUpdate({object: namespaceObject, relation, user})
       .then(() => toast({
-        title: "Update result",
+        title: "ACL Update result",
         description: `Successfully updated ${namespaceObject}#${relation}@${user}`,
       }))
       .catch((err: Error | AxiosError) => {
         if (axios.isAxiosError(err) && err.response?.status === 400) {
           toast({
-            title: "Update failed",
+            title: "ACL Update failed",
             variant: "destructive",
             description: err.response.data as string
           })
@@ -73,6 +76,38 @@ function App() {
       })
   }
 
+  const updateNamespace = () => {
+    if (namespaceFile === null) {
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const namespace = reader.result as string
+      namespaceUpdate(namespace)
+        .then(() => toast({
+          title: "Namespace Update result",
+          description: "Successfully updated",
+        }))
+        .catch((err: Error | AxiosError) => {
+          if (axios.isAxiosError(err) && err.response?.status === 400) {
+            toast({
+              title: "Namespace Update failed",
+              variant: "destructive",
+              description: err.response.data as string
+            })
+          } else {
+            toast({
+              title: "Unexpected error",
+              variant: "destructive",
+              description: "Please check your console"
+            })
+            console.log(err.message)
+          }
+        })
+    }
+    reader.readAsText(namespaceFile)
+  }
+
   return (
     <>
       <div className="flex justify-end p-4">
@@ -80,6 +115,7 @@ function App() {
       </div>
       <div className="m-auto mt-[250px] w-[800px] rounded-lg border">
         <div className="p-4 flex flex-col gap-2">
+          <h2>ACL</h2>
           <div className="flex gap-2">
             <div className="flex">
               <Input value={namespace} onChange={e => setNamespace(e.target.value)} placeholder="namespace" className="w-[100px] rounded-r-none focus:z-10 focus:rounded-md"></Input>
@@ -92,6 +128,14 @@ function App() {
           <div className="flex gap-1">
             <Button onClick={() => checkACL()}>Check</Button>
             <Button onClick={() => updateACL()}>Update</Button>
+          </div>
+        </div>
+        <Separator/>
+        <div className="p-4 flex flex-col gap-2">
+          <h2>Namespace</h2>
+          <div className="flex gap-2">
+            <Input type="file" className="w-[300px]" onChange={e => setNamespaceFile(e.target.files?.item(0) ?? null)}/>
+            <Button onClick={() => updateNamespace()}>Update</Button>
           </div>
         </div>
       </div>

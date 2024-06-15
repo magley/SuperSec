@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"lesotho/acl"
 	ns "lesotho/namespace"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var glo_acl *acl.ACL
@@ -78,7 +80,24 @@ func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("TODO: Implement namespaceUpdate")
+	namespaceAsString := new(strings.Builder)
+	_, err := io.Copy(namespaceAsString, r.Body)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var namespace ns.Namespace
+	err = json.Unmarshal([]byte(namespaceAsString.String()), &namespace)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	glo_nss.Add(namespace.Name, namespaceAsString.String())
+	log.Printf("Added Namespace %s.\n", namespace.Name)
 }
 
 func main() {
