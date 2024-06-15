@@ -74,7 +74,7 @@ func (acl *ACL) Has(directive *ACLDirective) bool {
 
 // ACLDirective is stored as key-val pair where key is {object}-{user} and val is {relation}
 func (acl *ACL) Add(aclDirective ACLDirective, nss *ns.NamespaceStore) error {
-	err := nss.HasNamespace(aclDirective.Namespace())
+	_, err := nss.HasNamespace(aclDirective.Namespace())
 	if err != nil {
 		return err
 	}

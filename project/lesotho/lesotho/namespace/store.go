@@ -76,17 +76,19 @@ func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname 
 	nss.Add(namespaceName, string(data))
 }
 
-func (nss *NamespaceStore) HasNamespace(namespaceName string) error {
+func (nss *NamespaceStore) HasNamespace(namespaceName string) (bool, error) {
 	if nss.graphCache == nil {
 		_, err := nss.Get(namespaceName)
-		return err
+		ok := err == nil
+		return ok, err
 	} else {
 		_, ok := nss.graphCache.Get(namespaceName)
 		if !ok {
 			_, err := nss.Get(namespaceName)
-			return err
+			ok := err == nil
+			return ok, err
 		}
-		return nil
+		return true, nil
 	}
 }
 
