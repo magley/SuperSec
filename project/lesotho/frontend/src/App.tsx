@@ -76,6 +76,14 @@ function App() {
       })
   }
 
+  const attemptStringtoJSON = (val: string): unknown => {
+    try {
+      return JSON.parse(val)
+    } catch {
+      return null
+    }
+  }
+
   const updateNamespace = () => {
     if (namespaceFile === null) {
       return
@@ -83,7 +91,16 @@ function App() {
     const reader = new FileReader()
     reader.onload = () => {
       const namespace = reader.result as string
-      namespaceUpdate(namespace)
+      const json = attemptStringtoJSON(namespace)
+      if (json === null) {
+        toast({
+          title: "Namespace Update failed",
+          variant: "destructive",
+          description: `${namespaceFile.name} is not a valid JSON file`,
+        })
+        return
+      }
+      namespaceUpdate(json)
         .then(() => toast({
           title: "Namespace Update result",
           description: "Successfully updated",

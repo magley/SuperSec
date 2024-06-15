@@ -22,6 +22,6 @@ export const aclUpdate = (directive: ACLDirective) => {
     return api.post<void>("acl", directive)
 }
 
-export const namespaceUpdate = (namespace: string) => {
-    return api.post<void>("namespace", JSON.parse(namespace))
+export const namespaceUpdate = (namespace: unknown) => {
+    return api.post<void>("namespace", namespace)
 }
