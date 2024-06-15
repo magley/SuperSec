@@ -14,10 +14,13 @@ function App() {
   const [relation, setRelation] = useState("")
   const [user, setUser] = useState("")
   const [aclLocked, setAclLocked] = useState(false);
+  const aclAnyFieldEmpty = namespace == "" || object == "" || relation == "" || user == ""
+  const aclAllFieldEmpty = namespace == "" && object == "" && relation == "" && user == ""
 
-  const inputFile = useRef<HTMLInputElement | null>(null)
   const [namespaceFile, setNamespaceFile] = useState<File | null>(null)
   const [namespaceLocked, setNamespaceLocked] = useState(false)
+  const namespaceInputElement = useRef<HTMLInputElement | null>(null)
+  const namespaceEmpty = namespaceFile == null
 
   const { toast } = useToast()
 
@@ -116,8 +119,8 @@ function App() {
             description: "Successfully updated",
           })
           setNamespaceFile(null)
-          if (inputFile.current) {
-            inputFile.current.value = ""
+          if (namespaceInputElement.current) {
+            namespaceInputElement.current.value = ""
           }
         })
         .catch((err: Error | AxiosError) => {
@@ -158,19 +161,19 @@ function App() {
               <Input disabled={aclLocked} value={relation} onChange={e => setRelation(e.target.value)} placeholder="relation" className="w-[150px] rounded-none focus:z-10 focus:rounded-md"></Input>
               <Input disabled={aclLocked} value={user} onChange={e => setUser(e.target.value)} placeholder="user" className="w-[150px] rounded-l-none focus:z-10 focus:rounded-md"></Input>
             </div>
-            <Button disabled={aclLocked} variant="outline" size="icon" onClick={emptyInputs}><X/></Button>
+            <Button disabled={aclLocked || aclAllFieldEmpty} variant="outline" size="icon" onClick={emptyInputs}><X/></Button>
           </div>
           <div className="flex gap-1">
-            <Button disabled={aclLocked} onClick={() => checkACL()}>Check</Button>
-            <Button disabled={aclLocked} onClick={() => updateACL()}>Update</Button>
+            <Button disabled={aclLocked || aclAnyFieldEmpty} onClick={() => checkACL()}>Check</Button>
+            <Button disabled={aclLocked || aclAnyFieldEmpty} onClick={() => updateACL()}>Update</Button>
           </div>
         </div>
         <Separator/>
         <div className="p-4 flex flex-col gap-2">
           <h2>Namespace</h2>
           <div className="flex gap-2">
-            <Input ref={inputFile} disabled={namespaceLocked} type="file" className="w-[300px]" onChange={e => setNamespaceFile(e.target.files?.item(0) ?? null)}/>
-            <Button disabled={namespaceLocked} onClick={() => updateNamespace()}>Update</Button>
+            <Input ref={namespaceInputElement} disabled={namespaceLocked} type="file" accept=".json" className="w-[300px]" onChange={e => setNamespaceFile(e.target.files?.item(0) ?? null)}/>
+            <Button disabled={namespaceLocked || namespaceEmpty} onClick={() => updateNamespace()}>Update</Button>
           </div>
         </div>
       </div>
