@@ -24,19 +24,38 @@ func (d *ACLDirective) Validate() error {
 	justNamespace := objectParts[0]
 	justObject := objectParts[1]
 
+	if justNamespace == "" {
+		return fmt.Errorf("field object in ACLDirective has empty namespace")
+	}
 	if strings.ContainsAny(justNamespace, ":#@") {
 		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
+	}
+	if justObject == "" {
+		return fmt.Errorf("field object in ACLDirective is an empty string")
 	}
 	if strings.ContainsAny(justObject, ":#@") {
 		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
 	}
+
+	if d.Relation == "" {
+		return fmt.Errorf("field relation in ACLDirective is an empty string")
+	}
 	if strings.ContainsAny(d.Relation, ":#@") {
 		return fmt.Errorf("field relation (%s) in ACLDirective contains invalid character", d.Relation)
+	}
+
+	if d.User == "" {
+		return fmt.Errorf("field user in ACLDirective is an empty string")
 	}
 	if strings.ContainsAny(d.User, ":#@") {
 		return fmt.Errorf("field user (%s) in ACLDirective contains invalid character", d.User)
 	}
 	return nil
+}
+
+// Assumes ACLDirective is valid
+func (d *ACLDirective) Namespace() string {
+	return strings.Split(d.Object, ":")[0]
 }
 
 // String converts the ACLDirective into canonical form.

@@ -41,7 +41,12 @@ func aclUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	glo_acl.Add(aclDirective)
+	err = glo_acl.Add(aclDirective, glo_nss)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	log.Printf("Added %v to the ACL.\n", aclDirective)
 }
 
@@ -98,6 +103,7 @@ func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
 
 	glo_nss.Add(namespace.Name, namespaceAsString.String())
 	log.Printf("Added Namespace %s.\n", namespace.Name)
+	log.Println(namespaceAsString.String())
 }
 
 func main() {
@@ -107,7 +113,7 @@ func main() {
 	glo_nss.AddFromFile("basic", "./basic.json")
 
 	glo_acl = acl.NewACL("./data/acl/")
-	glo_acl.AddFromFile("./basic.acl")
+	glo_acl.AddFromFile("./basic.acl", glo_nss)
 	defer glo_acl.Close()
 
 	http.HandleFunc("/acl", aclUpdate)
