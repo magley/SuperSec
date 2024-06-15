@@ -15,11 +15,7 @@ const api = axios.create({
 })
 
 export const aclCheck = (directive: ACLDirective) => {
-    return api.get<AuthorizationResponse>("acl/check", { params: {
-        object: directive.object,
-        relation: directive.relation,
-        user: directive.user,
-    }})
+    return api.get<AuthorizationResponse>("acl/check", { params: { ...directive } })
 }
 
 export const aclUpdate = (directive: ACLDirective) => {

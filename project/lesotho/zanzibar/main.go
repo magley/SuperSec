@@ -16,7 +16,7 @@ type AuthorizationResponse struct {
 }
 
 func aclUpdate(w http.ResponseWriter, r *http.Request) {
-	println("/acl")
+	println(r.URL.EscapedPath())
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -44,7 +44,7 @@ func aclUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func aclQuery(w http.ResponseWriter, r *http.Request) {
-	println("/acl/check")
+	println(r.URL.EscapedPath())
 	if r.Method != http.MethodGet {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -71,7 +71,7 @@ func aclQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
-	println("/namespace")
+	println(r.URL.EscapedPath())
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

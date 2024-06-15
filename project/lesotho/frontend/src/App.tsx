@@ -5,6 +5,7 @@ import { X } from "lucide-react"
 import { useState } from "react"
 import { aclCheck, aclUpdate } from "./http/endpoints"
 import { useToast } from "./components/ui/use-toast"
+import axios, { AxiosError } from "axios"
 
 function App() {
   const [namespace, setNamespace] = useState("")
@@ -22,26 +23,59 @@ function App() {
   }
 
   const checkACL = () => {
-    aclCheck({object: `${namespace}:${object}`, relation, user})
+    const namespaceObject = `${namespace}:${object}`
+    aclCheck({object: namespaceObject, relation, user})
       .then(res => toast({
-        variant: res.data.authorized ? "default" : "destructive",
-        description: `Authorization ${res.data.authorized ? "succeeded" : "failed"}`,
+        title: "Authorization result",
+        description: `${res.data.authorized ? "Yes" : "No"}, ${user} -> ${relation} of ${namespaceObject}`,
       }))
-      // TODO: typed errors shown in toast
-      .catch(err => console.log(err))
+      // https://github.com/axios/axios/issues/3612#issuecomment-770224236
+      .catch((err: Error | AxiosError) => {
+        if (axios.isAxiosError(err) && err.response?.status === 400) {
+          toast({
+            title: "Authorization failed",
+            variant: "destructive",
+            description: err.response.data as string
+          })
+        } else {
+          toast({
+            title: "Unexpected error",
+            variant: "destructive",
+            description: "Please check your console"
+          })
+          console.log(err.message)
+        }
+      })
   }
 
   const updateACL = () => {
-    aclUpdate({object: `${namespace}:${object}`, relation, user})
+    const namespaceObject = `${namespace}:${object}`
+    aclUpdate({object: namespaceObject, relation, user})
       .then(() => toast({
-        description: "Update succeeded",
+        title: "Update result",
+        description: `Successfully updated ${namespaceObject}#${relation}@${user}`,
       }))
-      .catch(err => console.log(err))
+      .catch((err: Error | AxiosError) => {
+        if (axios.isAxiosError(err) && err.response?.status === 400) {
+          toast({
+            title: "Update failed",
+            variant: "destructive",
+            description: err.response.data as string
+          })
+        } else {
+          toast({
+            title: "Unexpected error",
+            variant: "destructive",
+            description: "Please check your console"
+          })
+          console.log(err.message)
+        }
+      })
   }
 
   return (
     <>
-      <div className="absolute top-[10px] right-[10px]">
+      <div className="flex justify-end p-4">
         <ModeToggle/>
       </div>
       <div className="m-auto mt-[250px] w-[800px] rounded-lg border">
