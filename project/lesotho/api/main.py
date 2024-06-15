@@ -14,7 +14,6 @@ def make_response_with_cors():
     return res
 
 
-# TODO: Error handling
 @app.route("/acl", methods=["POST", "OPTIONS"])
 def acl_update():
     print(request.url)
