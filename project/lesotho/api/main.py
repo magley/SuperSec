@@ -2,7 +2,7 @@ from flask import Flask, request, make_response
 import requests
 
 
-ZANZIBAR_URL = "http://localhost:5000"
+LESOTHO_URL = "http://localhost:5000"
 FRONTEND_URL = "http://localhost:5173"
 
 app = Flask(__name__)
@@ -22,7 +22,7 @@ def acl_update():
         response.headers.add("Access-Control-Allow-Headers", "content-type")
         return response
 
-    acl = requests.post(f'{ZANZIBAR_URL}/acl', json=request.get_json())
+    acl = requests.post(f'{LESOTHO_URL}/acl', json=request.get_json())
     if (acl.status_code == 400):
         response.status_code = 400
         response.set_data(acl.content)
@@ -34,7 +34,7 @@ def acl_query():
     print(request.url)
     response = make_response_with_cors()
 
-    check = requests.get(f'{ZANZIBAR_URL}/acl/check', {
+    check = requests.get(f'{LESOTHO_URL}/acl/check', {
         'object': request.args.get("object"),
         'relation': request.args.get("relation"),
         'user': request.args.get("user"),
@@ -55,7 +55,7 @@ def namespace_update():
         response.headers.add("Access-Control-Allow-Headers", "content-type")
         return response
 
-    namespace = requests.post(f'{ZANZIBAR_URL}/namespace', json=request.get_json())
+    namespace = requests.post(f'{LESOTHO_URL}/namespace', json=request.get_json())
     if (namespace.status_code == 400):
         response.status_code = 400
         response.set_data(namespace.content)
