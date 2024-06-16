@@ -2,60 +2,22 @@
 import * as d3 from 'd3';
 import { onMounted, ref } from 'vue';
 
-const hmm = {
-    "name": "basic",
-    "relations": {
-        "owner": {},
-        "reviewer": {},
-        "editor": {
-            "union": [
-                {
-                    "this": {}
-                },
-                {
-                    "computed_userset": {
-                        "relation": "owner"
-                    }
-                },
-                {
-                    "computed_userset": {
-                        "relation": "reviewer"
-                    }
-                }
-            ]
-        },
-        "viewer": {
-            "union": [
-                {
-                    "this": {}
-                },
-                {
-                    "computed_userset": {
-                        "relation": "editor"
-                    }
-                }
-            ]
-        },
-        "commenter": {
-            "union": [
-                {
-                    "this": {}
-                },
-                {
-                    "computed_userset": {
-                        "relation": "reviewer"
-                    }
-                }
-            ]
-        }
-    }
-}
+let Svg = ref();
+const inputFile = ref(null);
 
+const Nodes = ref([]);
+const Links = ref([]);
+const IdCounter = ref(0);
+
+const nodeRadius = 15;
+const nodeLabelSize = "10pt";
+const nodeIconSize = 1.25; // Relative to node size.
+const calcNodeRadius = (d) => d.type == 'role' ? nodeRadius : nodeRadius * 2; 
+const arrowH = nodeRadius * 1.25;
 
 const namespaceToGraph = (data) => {
     const namespaceName = data.name;
 
-    let idCounter = 1;
     let idMap = {};
 
     let G = {
@@ -64,21 +26,21 @@ const namespaceToGraph = (data) => {
     }
 
     G.nodes.push({
-        "id": idCounter,
+        "id": IdCounter.value,
         "label": namespaceName,
         "type": "namespace"
     });
-    idMap[namespaceName] = idCounter;
-    idCounter++;
+    idMap[namespaceName] = IdCounter.value;
+    IdCounter.value++;
 
     for (const [key, value] of Object.entries(data.relations)) {
         G.nodes.push({
-            "id": idCounter,
+            "id": IdCounter.value,
             "label": key,
             "type": "role"
         });
-        idMap[key] = idCounter;
-        idCounter++;
+        idMap[key] = IdCounter.value;
+        IdCounter.value++;
     }
 
     for (const [key, value] of Object.entries(data.relations)) {
@@ -98,143 +60,18 @@ const namespaceToGraph = (data) => {
 
         G.links.push({
             "source": idMap[key],
-            "target": idMap[namespaceName]
+            "target": idMap[namespaceName],
+            "dashed": false
         });
     }
 
     return G;
 }
 
-onMounted(() => {
-    // const data = {
-    //     "nodes": [
-    //     {
-    //         "id": 1,
-    //         "name": "A",
-    //         "type": "namespace",
-    //     },
-    //     {
-    //         "id": 2,
-    //         "name": "B",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 3,
-    //         "name": "C",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 4,
-    //         "name": "D",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 5,
-    //         "name": "E",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 6,
-    //         "name": "F",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 7,
-    //         "name": "G",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 8,
-    //         "name": "H",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 9,
-    //         "name": "I",
-    //         "type": "role",
-    //     },
-    //     {
-    //         "id": 10,
-    //         "name": "J",
-    //         "type": "role",
-    //     }
-    //     ],
-    //     "links": [
-
-    //     {
-    //         "source": 1,
-    //         "target": 2
-    //     },
-    //     {
-    //         "source": 1,
-    //         "target": 5
-    //     },
-    //     {
-    //         "source": 1,
-    //         "target": 6
-    //     },
-
-    //     {
-    //         "source": 2,
-    //         "target": 3
-    //     },
-    //             {
-    //         "source": 2,
-    //         "target": 7
-    //     }
-    //     ,
-
-    //     {
-    //         "source": 3,
-    //         "target": 4
-    //     },
-    //         {
-    //         "source": 8,
-    //         "target": 3
-    //     }
-    //     ,
-    //     {
-    //         "source": 4,
-    //         "target": 5
-    //     }
-    //     ,
-
-    //     {
-    //         "source": 4,
-    //         "target": 9
-    //     },
-    //     {
-    //         "source": 5,
-    //         "target": 10
-    //     }
-    //     ]
-    // };
-
-    const data = namespaceToGraph(hmm);
-
+const initSvg = () => {
     // Specify the dimensions of the chart.
     const width = 928;
     const height = 520;
-    const nodeRadius = 15;
-    const nodeLabelSize = "10pt";
-    const nodeIconSize = 1.25; // Relative to node size.
-    const calcNodeRadius = (d) => d.type == 'role' ? nodeRadius : nodeRadius * 2; 
-    const arrowH = nodeRadius * 1.25;
-
-    // Specify the color scale.
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
-
-    // The force simulation mutates links and nodes, so create a copy
-    // so that re-evaluating this cell produces the same result.
-    const links = data.links.map(d => ({...d}));
-    const nodes = data.nodes.map(d => ({...d}));
-
-    // Create a simulation with several forces.
-    const simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(100))
-        .force("charge", d3.forceManyBody().strength(-1500))
-        .force("x", d3.forceX())
-        .force("y", d3.forceY());
 
     // Create the SVG container.
     var svg = d3.select("#my_dataviz")
@@ -244,7 +81,26 @@ onMounted(() => {
             .attr("viewBox", [-width / 2, -height / 2, width, height])
             .attr("style", "max-width: 100%; height: 100%;");
 
-    // Arrowhead marker definition. 
+    Svg.value = svg;
+}
+
+onMounted(() => {
+    initSvg();
+    createGraphInitial();
+});
+
+const createGraphFromNamespaceJson = (namespaceJSON) => {
+    let g = JSON.parse(namespaceJSON);
+    createGraphFromNamespaceObject(g);
+}
+
+const createGraphInitial = () => {
+    var svg = Svg.value;
+    svg.append("g").attr("id", "graph-links");
+    svg.append("g").attr("id", "graph-nodes");
+    svg.append("g").attr("id", "graph-node-labels");
+    svg.append("g").attr("id", "graph-node-icons");
+
     svg
         .append('defs')
         .append('marker')
@@ -259,46 +115,39 @@ onMounted(() => {
         .attr('d', d3.line()([[-arrowH-5, 0], [-arrowH-5, arrowH], [-5, arrowH / 2]]))
         .attr('stroke', 'rgb(140, 146, 156)')
         .attr('fill', 'rgb(140, 146, 156)');
+}
 
-    // Add a line for each link, and a circle for each node.
-    const link = svg.append("g")
-        .attr("id", "graph-link")
+const updateGraph = () => {
+    const node = d3.select("#graph-nodes")
+        .selectAll("circle")
+        .data(Nodes.value)
+        .join("circle")
+        .attr("r", (d) => calcNodeRadius(d))
+        .attr("fill", (d) => d.type == 'role' ? 'rgb(229, 113, 208)' : 'rgb(84, 154, 246)' );
+    
+    const link = d3.select("#graph-links")
+        .selectAll("line")
+        .data(Links.value)
+        .join("line")
         .attr("stroke", "rgb(140, 146, 156)")
         .attr("stroke-opacity", 0.6)
-        .selectAll("line")
-        .data(links)
-        .join("line")
-        .attr("stroke-width", d => Math.sqrt(d.value))
         .attr("stroke-dasharray", d => d.dashed ? "4" : null)
         .attr('marker-start', d => d.dashed ? 'url(#arrow)' : '');
 
-    // Node label.
-    const nodeLabel = svg.append("g")
-        .attr("id", "graph-node-label")
-        .attr("class", "pointer-events-none")
+    const node_label = d3.select("#graph-node-labels")
         .selectAll("text")
-        .data(nodes)
+        .data(Nodes.value)
         .join("text")
         .attr("dy", nodeRadius * 1.35)
         .attr("fill", "rgb(204, 209, 218)")
         .attr("text-anchor", "middle")
+        .attr("font-family", "monospace")
         .attr("font-size", nodeLabelSize)
         .text(d => d.label);
 
-    // Node.
-    const node = svg.append("g")
-        .attr("id", "graph-node")
-        .selectAll("circle")
-        .data(nodes)
-        .join("circle")
-        .attr("r", (d) => calcNodeRadius(d))
-        .attr("fill", (d) => d.type == 'role' ? 'rgb(229, 113, 208)' : 'rgb(84, 154, 246)' );
-
-    // Node icon.
-    const nodeIcon = svg.append("g")
-        .attr("id", "graph-node-icon")
+    const node_icon = d3.select("#graph-node-icons")
         .selectAll("image")
-        .data(nodes)
+        .data(Nodes.value)
         .join("image")
         .attr("href", (d) => d.type == 'role' ? "public/ico_user.png" : "public/ico_file.png")
         .attr("width", (d) => calcNodeRadius(d) * nodeIconSize)
@@ -306,17 +155,61 @@ onMounted(() => {
         .attr("x", (d) => -calcNodeRadius(d) * nodeIconSize / 2)
         .attr("y", (d) => -calcNodeRadius(d) * nodeIconSize / 2);
 
-    // Add a drag behavior.
+    //-------------------------------------------------------------------------
+    // Interact
+    //-------------------------------------------------------------------------
+
     node.call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
-    nodeIcon.call(d3.drag()
+    node_icon.call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
-    
-    // Set the position attributes of links and nodes each time the simulation ticks.
+
+    function dragstarted(event) {
+        if (!event.active) {
+            simulation.alphaTarget(0.2).restart();
+        }
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
+
+    function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+    }
+
+    function dragended(event) {
+        if (!event.active) {
+            simulation.alphaTarget(0);
+        }
+        event.subject.fx = null;
+        event.subject.fy = null;
+    }
+
+    function handleZoom(e) {
+        d3.select('#graph-links').attr('transform', e.transform);
+        d3.select('#graph-nodes').attr('transform', e.transform);
+        d3.select('#graph-node-labels').attr('transform', e.transform);
+        d3.select('#graph-node-icons').attr('transform', e.transform);
+    }
+    let zoom = d3.zoom().on('zoom', (handleZoom));
+    d3.select('svg').call(zoom);
+
+    //-------------------------------------------------------------------------
+    // Force layout
+    //-------------------------------------------------------------------------
+
+    const simulation = d3.forceSimulation(Nodes.value)
+        .force("link", d3.forceLink(Links.value).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-1500))
+        .force("x", d3.forceX())
+        .force("y", d3.forceY());
+
+    console.log(Nodes.value)
+
     simulation.on("tick", () => {
         link
             .attr("x1", d => d.source.x)
@@ -327,55 +220,52 @@ onMounted(() => {
         node
             .attr("cx", d => d.x)
             .attr("cy", d => d.y);
-        nodeLabel
+
+        node_label
             .attr("x", d => d.x)
             .attr("y", d => d.y + nodeRadius * 1.35);
-        nodeIcon
+
+        node_icon
             .attr("x", d => d.x - calcNodeRadius(d) * nodeIconSize / 2)
             .attr("y", d => d.y - calcNodeRadius(d) * nodeIconSize / 2);
     });
+}
 
-    // Reheat the simulation when drag starts, and fix the subject position.
-    function dragstarted(event) {
-        if (!event.active) {
-            simulation.alphaTarget(0.2).restart();
-        }
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
+const createGraphFromNamespaceObject = (namespace) => {
+    const G = namespaceToGraph(namespace);
+
+    for (let node of G.nodes) {
+        Nodes.value.push(node);
+    }
+    for (let link of G.links) {
+        Links.value.push(link);
     }
 
-    // Update the subject (dragged node) position during drag.
-    function dragged(event) {
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
-    }
+    updateGraph();
+};
 
-    // Restore the target alpha so the simulation cools after dragging ends.
-    // Unfix the subject position now that it’s no longer being dragged.
-    function dragended(event) {
-        if (!event.active) {
-            simulation.alphaTarget(0);
-        }
-        event.subject.fx = null;
-        event.subject.fy = null;
+const onUploadFile = (e) => {
+    var reader = new FileReader();
+    reader.readAsText(e.target.files[0], "UTF-8");
+    reader.onload = function (evt) {
+        createGraphFromNamespaceJson(evt.target.result);
+        inputFile.value = null;
     }
-
-    function handleZoom(e) {
-        d3.select('#graph-link').attr('transform', e.transform);
-        d3.select('#graph-node').attr('transform', e.transform);
-        d3.select('#graph-node-label').attr('transform', e.transform);
-        d3.select('#graph-node-icon').attr('transform', e.transform);
+    reader.onerror = function (evt) {
+        console.error(evt);
+        inputFile.value = null;
     }
-    let zoom = d3.zoom().on('zoom', (handleZoom));
-    d3.select('svg').call(zoom);
-});
-
+}
 
 </script>
 
 <template>
 <div id="body">
-    <h1 class="font">Lesotho</h1>
+    <h1 class="font">Lesotho visualizator</h1>
+    <h3 class="font2">Upload a namespace file</h3>
+    <form method="post" enctype="multipart/form-data" >
+        <input type="file" name="file" accept=".json" @change="(e) => onUploadFile(e)" ref="inputFile">
+    </form>
     <div id="my_dataviz"></div>
 </div>
 </template>
@@ -383,10 +273,18 @@ onMounted(() => {
 <style scoped>
 
 .font {
-    font-family: Garamond;
-    position: absolute;
-    font-size: 5em;
-    color:white;
+    font-family: monospace;
+    font-size: 4em;
+    color:lightgray;
+    font-weight: 100;
+    margin: 0;
+    padding: 0;
+}
+
+.font2 {
+    font-family: monospace;
+    font-size: 2em;
+    color:gray;
     font-weight: 100;
     margin: 0;
     padding: 0;
