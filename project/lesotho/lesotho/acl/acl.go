@@ -48,35 +48,41 @@ func (acl *ACL) Get(key string) string {
 	return string(val)
 }
 
-func (acl *ACL) Put(key string) {
-	err := acl.db.Put([]byte(key), []byte{}, nil)
+func (acl *ACL) Put(key string, val string) {
+	err := acl.db.Put([]byte(key), []byte(val), nil)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (acl *ACL) Has(key string) bool {
-	has, err := acl.db.Has([]byte(key), nil)
+func (acl *ACL) Has(directive *ACLDirective) bool {
+	val, err := acl.db.Get([]byte(directive.ObjectUserString()), nil)
 	if err != nil {
-		panic(err)
+		if err == leveldb.ErrNotFound {
+			return false
+		} else {
+			panic(err)
+		}
 	}
 
-	return has
+	return directive.Relation == string(val)
 }
 
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 // High level methods.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-func (acl *ACL) addDirective(directive string) {
-	acl.Put(directive)
+// ACLDirective is stored as key-val pair where key is {object}-{user} and val is {relation}
+func (acl *ACL) Add(aclDirective ACLDirective, nss *ns.NamespaceStore) error {
+	_, err := nss.HasNamespace(aclDirective.Namespace())
+	if err != nil {
+		return err
+	}
+	acl.Put(aclDirective.ObjectUserString(), aclDirective.Relation)
+	return nil
 }
 
-func (acl *ACL) Add(aclDirective ACLDirective) {
-	acl.addDirective(aclDirective.String())
-}
-
-func (acl *ACL) AddFromFile(aclDataFname string) {
+func (acl *ACL) AddFromFile(aclDataFname string, nss *ns.NamespaceStore) {
 	file, err := os.Open(aclDataFname)
 	if err != nil {
 		panic(err)
@@ -95,22 +101,23 @@ func (acl *ACL) AddFromFile(aclDataFname string) {
 			continue
 		}
 
-		acl.addDirective(line)
+		directive, err := NewACLDirectiveFromCanonicalString(line)
+		if err != nil {
+			panic(err)
+		}
+		err = acl.Add(*directive, nss)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
 func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
-	directive := aclDirective.String()
-
-	if acl.Has(directive) {
+	if acl.Has(aclDirective) {
 		return true
 	}
 
-	parts := strings.Split(aclDirective.Object, ":")
-	if len(parts) != 2 {
-		panic("object in an ACL directive must have the following structure: name:instance")
-	}
-	namespaceName := parts[0]
+	namespaceName := aclDirective.Namespace()
 	G, err := nss.GetNamespaceGraph(namespaceName)
 	if err != nil {
 		log.Printf("Could not build graph from namespace %s: %s\n", namespaceName, err.Error())
@@ -151,7 +158,7 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 		parentsChecked[r] = true
 
 		aclD := newACLDirectiveWithoutValidation(aclDirective.Object, r, aclDirective.User)
-		if acl.Has(aclD.String()) {
+		if acl.Has(aclD) {
 			return true
 		}
 	}

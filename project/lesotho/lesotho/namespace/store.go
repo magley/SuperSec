@@ -76,6 +76,22 @@ func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname 
 	nss.Add(namespaceName, string(data))
 }
 
+func (nss *NamespaceStore) HasNamespace(namespaceName string) (bool, error) {
+	if nss.graphCache == nil {
+		_, err := nss.Get(namespaceName)
+		ok := err == nil
+		return ok, err
+	} else {
+		_, ok := nss.graphCache.Get(namespaceName)
+		if !ok {
+			_, err := nss.Get(namespaceName)
+			ok := err == nil
+			return ok, err
+		}
+		return true, nil
+	}
+}
+
 func (nss *NamespaceStore) GetRelations(namespaceName string) (map[string]NamespaceRelation, error) {
 	namespaceJson, err := nss.Get(namespaceName)
 	if err != nil {
