@@ -24,14 +24,28 @@ func (d *ACLDirective) Validate() error {
 	justNamespace := objectParts[0]
 	justObject := objectParts[1]
 
+	if justNamespace == "" {
+		return fmt.Errorf("field object in ACLDirective has empty namespace")
+	}
 	if strings.ContainsAny(justNamespace, ":#@") {
 		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
+	}
+	if justObject == "" {
+		return fmt.Errorf("field object in ACLDirective is an empty string")
 	}
 	if strings.ContainsAny(justObject, ":#@") {
 		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
 	}
+
+	if d.Relation == "" {
+		return fmt.Errorf("field relation in ACLDirective is an empty string")
+	}
 	if strings.ContainsAny(d.Relation, ":#@") {
 		return fmt.Errorf("field relation (%s) in ACLDirective contains invalid character", d.Relation)
+	}
+
+	if d.User == "" {
+		return fmt.Errorf("field user in ACLDirective is an empty string")
 	}
 	if strings.ContainsAny(d.User, ":#@") {
 		return fmt.Errorf("field user (%s) in ACLDirective contains invalid character", d.User)
@@ -39,9 +53,18 @@ func (d *ACLDirective) Validate() error {
 	return nil
 }
 
+// Assumes ACLDirective is valid
+func (d *ACLDirective) Namespace() string {
+	return strings.Split(d.Object, ":")[0]
+}
+
 // String converts the ACLDirective into canonical form.
 func (d *ACLDirective) String() string {
 	return fmt.Sprintf("%s#%s@%s", d.Object, d.Relation, d.User)
+}
+
+func (d *ACLDirective) ObjectUserString() string {
+	return fmt.Sprintf("%s-%s", d.Object, d.User)
 }
 
 func NewACLDirective(object string, relation string, user string) (*ACLDirective, error) {
@@ -67,4 +90,19 @@ func newACLDirectiveWithoutValidation(object string, relation string, user strin
 	aclDirective.User = user
 
 	return aclDirective
+}
+
+func NewACLDirectiveFromCanonicalString(canonical string) (*ACLDirective, error) {
+	parts := strings.Split(canonical, "#")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("canonical string (%s) has invalid format", canonical)
+	}
+	object := parts[0]
+	parts = strings.Split(parts[1], "@")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("canonical string (%s) has invalid format", canonical)
+	}
+	relation := parts[0]
+	user := parts[1]
+	return NewACLDirective(object, relation, user)
 }

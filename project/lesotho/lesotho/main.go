@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"lesotho/acl"
 	ns "lesotho/namespace"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var glo_acl *acl.ACL
@@ -16,6 +18,7 @@ type AuthorizationResponse struct {
 }
 
 func aclUpdate(w http.ResponseWriter, r *http.Request) {
+	println(r.URL.EscapedPath())
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -38,11 +41,17 @@ func aclUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	glo_acl.Add(aclDirective)
+	err = glo_acl.Add(aclDirective, glo_nss)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	log.Printf("Added %v to the ACL.\n", aclDirective)
 }
 
 func aclQuery(w http.ResponseWriter, r *http.Request) {
+	println(r.URL.EscapedPath())
 	if r.Method != http.MethodGet {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -69,13 +78,32 @@ func aclQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
+	println(r.URL.EscapedPath())
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	log.Println("TODO: Implement namespaceUpdate")
+	namespaceAsString := new(strings.Builder)
+	_, err := io.Copy(namespaceAsString, r.Body)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var namespace ns.Namespace
+	err = json.Unmarshal([]byte(namespaceAsString.String()), &namespace)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	glo_nss.Add(namespace.Name, namespaceAsString.String())
+	log.Printf("Added Namespace %s.\n", namespace.Name)
+	log.Println(namespaceAsString.String())
 }
 
 func main() {
@@ -85,7 +113,7 @@ func main() {
 	glo_nss.AddFromFile("basic", "./basic.json")
 
 	glo_acl = acl.NewACL("./data/acl/")
-	glo_acl.AddFromFile("./basic.acl")
+	glo_acl.AddFromFile("./basic.acl", glo_nss)
 	defer glo_acl.Close()
 
 	http.HandleFunc("/acl", aclUpdate)
