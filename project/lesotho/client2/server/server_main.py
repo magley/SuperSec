@@ -32,6 +32,13 @@ def register():
     return make_response(jsonify({}), 200)
 
 
+@app.route("/user/all", methods=["GET"])
+def get_all_users():
+    r = userRepo.get_all()
+    r = [{'id': doc['id'], 'email': doc['email']} for doc in r]
+    return make_response(jsonify(r), 200)
+
+
 @app.route("/doc/all", methods=["GET"])
 def get_all_docs():
     r = docRepo.get_all()
@@ -54,6 +61,13 @@ def check_doc_permission():
     body = json.loads(request.json)
     authorized = service.check_acl(body['doc_id'], body['relation'], body['user'])
     return authorized
+
+
+@app.route("/doc/share", methods=["POST"])
+def share_doc():
+    body = json.loads(request.json)
+    service.add_acl_directive(body['doc_id'], body['relation'], body['user'])
+    return make_response(jsonify(body), 200)
 
 
 service.update_namespace_from_file()

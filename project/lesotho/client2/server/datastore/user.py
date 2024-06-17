@@ -34,6 +34,9 @@ class UserRepo:
         self.data.append(u)
         self.flush()
         return u
+    
+    def get_all(self):
+        return self.data[:]
 
     def find_by_id(self, id: int):
         for o in self.data:
