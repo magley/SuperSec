@@ -11,15 +11,37 @@ def _edit_document_by_id(doc_id: int):
     if not service.check_access(state.STATE['id'], doc_id, 'editor').body['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to edit this document.{bcolors.ENDC}")
         return
-    print("Editing...")
+    print(f"{bcolors.HEADER}You are in APPEND mode.\nType anything to make changes\nEnter a blank line to finish\n=========================={bcolors.ENDC}")
 
+    ss = ""
+
+    while True:
+        i = input()
+        if i == "":
+            break
+        ss += i + '\n'
+
+    should_save = False
+    while True:
+        i = input("Save changes? [Y/n]:")
+        if i in ['y', 'Y', 'yes', '1', 'true']:
+            should_save = True
+            break
+        elif i in ['n', 'N', 'no', '0', 'false']:
+            break
+
+    if should_save:
+        service.append_to_doc(doc_id, ss)
 
 def _read_document_by_id(doc_id: int):
     if not service.check_access(state.STATE['id'], doc_id, 'viewer').body['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to view this document.{bcolors.ENDC}")
         return
-    print("Viewing...")
-
+    
+    doc = service.get_doc_by_id(doc_id).body
+    print(f"{bcolors.HEADER}Here's the document:\n=========================={bcolors.ENDC}")
+    print(doc['text'])
+    print(f"{bcolors.HEADER}=========================={bcolors.ENDC}")
 
 
 def _select_entity(entities: list, field_to_print: str, prompt: str):

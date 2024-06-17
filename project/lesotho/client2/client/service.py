@@ -58,6 +58,18 @@ def share_doc(user_id, doc_id, relation) -> SimpleResponse:
     return SimpleResponse(r)
 
 
+def append_to_doc(doc_id, text) -> SimpleResponse:
+    r = requests.put(f'{API_URL}/doc/append', json=json.dumps({
+        'doc_id': doc_id,
+        'text': text,
+    }))
+    return SimpleResponse(r)  
+
+
+def get_doc_by_id(doc_id) -> SimpleResponse:
+    r = requests.get(f'{API_URL}/doc/{doc_id}')
+    return SimpleResponse(r)  
+
 def get_all_docs() -> SimpleResponse:
     r = requests.get(f'{API_URL}/doc/all')
     return SimpleResponse(r)

@@ -70,4 +70,18 @@ def share_doc():
     return make_response(jsonify(body), 200)
 
 
+@app.route("/doc/append", methods=["PUT"])
+def append_to_doc():
+    body = json.loads(request.json)
+    docRepo.append_text(body['doc_id'], body['text'])
+    return make_response(jsonify({}), 200)
+
+
+@app.route("/doc/<id>", methods=["GET"])
+def get_doc_by_id(id: int):
+    id = int(id)
+    doc = docRepo.find_by_id(id)
+    print('Got doc:', doc)
+    return make_response(jsonify(doc), 200)
+
 service.update_namespace_from_file()

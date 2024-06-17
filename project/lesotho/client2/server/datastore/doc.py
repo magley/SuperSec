@@ -30,6 +30,7 @@ class DocRepo:
             'id': self.id_counter,
             'owner_id': owner_id,
             'name': name,
+            'text': '',
         }
         self.data.append(u)
         self.flush()
@@ -50,3 +51,10 @@ class DocRepo:
             if o['owner_id'] == owner_id:
                 docs.append(o)
         return docs
+
+    def append_text(self, doc_id: int, text: str):
+        doc = self.find_by_id(doc_id)
+        if id == None:
+            return
+        doc['text'] += text
+        self.flush()
