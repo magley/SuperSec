@@ -1,12 +1,12 @@
 import json
 import bcrypt
 
-class UserRepo:
+class DocRepo:
     def __init__(self):
         self.salt = bcrypt.gensalt()
         self.data = []
         self.id_counter = 0
-        self.fname = './data/user.json'
+        self.fname = './data/doc.json'
         self.load()
 
     def load(self):
@@ -24,16 +24,19 @@ class UserRepo:
         with open(self.fname, 'w') as f:
             f.write(json.dumps(self.data))
 
-    def save(self, email: str, password_raw: str):
+    def create(self, owner_id: int, name: str):
         self.id_counter += 1
         u = {
             'id': self.id_counter,
-            'email': email,
-            'password': bcrypt.hashpw(password_raw.encode(), self.salt).decode("utf-8")
+            'owner_id': owner_id,
+            'name': name,
         }
         self.data.append(u)
         self.flush()
         return u
+    
+    def get_all(self):
+        return self.data[:]
 
     def find_by_id(self, id: int):
         for o in self.data:
@@ -41,14 +44,9 @@ class UserRepo:
                 return o
         return None
     
-    def find_by_email(self, email: str):
+    def find_by_owner_id(self, owner_id: int):
+        docs = []
         for o in self.data:
-            if o['email'] == email:
-                return o
-        return None
-    
-    def find_by_email_password(self, email: str, password_raw: str):
-        for o in self.data:
-            if o['email'] == email and bcrypt.checkpw(password_raw.encode(), o['password'].encode()):
-                return o
-        return None
+            if o['owner_id'] == owner_id:
+                docs.append(o)
+        return docs

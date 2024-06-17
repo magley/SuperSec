@@ -25,7 +25,10 @@ def register():
         print(bcolors.FAIL + "Passwords do not match" + bcolors.ENDC)
         return
 
-    service.register(email, password)
+    resp = service.register(email, password)
+    if resp.status_code >= 400:
+        print(bcolors.FAIL + resp.body['error']+ bcolors.ENDC)
+        return
     print(f"{bcolors.OKCYAN}Success{bcolors.ENDC}")
 
 

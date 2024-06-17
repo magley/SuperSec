@@ -25,3 +25,25 @@ def register(email, password) -> SimpleResponse:
         'password': password
     }))
     return SimpleResponse(r)
+
+
+def new_doc(owner_id, name) -> SimpleResponse:
+    r = requests.post(f'{API_URL}/doc/new', json=json.dumps({
+        'owner_id': owner_id,
+        'name': name
+    }))
+    return SimpleResponse(r)
+
+
+def check_access(user_id, doc_id, relation) -> SimpleResponse:
+    r = requests.put(f'{API_URL}/doc/check', json=json.dumps({
+        'user': user_id,
+        'doc_id': doc_id,
+        'relation': relation,
+    }))
+    return SimpleResponse(r)
+
+
+def get_all_docs() -> SimpleResponse:
+    r = requests.get(f'{API_URL}/doc/all')
+    return SimpleResponse(r)

@@ -1,0 +1,30 @@
+{
+    "name": "client2",
+    "relations": {
+        "owner": {},
+        "editor": {
+            "union": [
+                {
+                    "this": {}
+                },
+                {
+                    "computed_userset": {
+                        "relation": "owner"
+                    }
+                }
+            ]
+        },
+        "viewer": {
+            "union": [
+                {
+                    "this": {}
+                },
+                {
+                    "computed_userset": {
+                        "relation": "editor"
+                    }
+                }
+            ]
+        }
+    }
+}
