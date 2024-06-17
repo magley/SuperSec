@@ -11,7 +11,7 @@ def _edit_document_by_id(doc_id: int):
     if not service.check_access(state.STATE['id'], doc_id, 'editor').body['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to edit this document.{bcolors.ENDC}")
         return
-    print(f"{bcolors.HEADER}You are in APPEND mode.\nType anything to make changes\nEnter a blank line to finish\n=========================={bcolors.ENDC}")
+    print(f"{bcolors.OKCYAN}You are in APPEND mode.\nType anything to make changes\nEnter a blank line to finish\n=========================={bcolors.ENDC}")
 
     ss = ""
 
@@ -39,9 +39,9 @@ def _read_document_by_id(doc_id: int):
         return
     
     doc = service.get_doc_by_id(doc_id).body
-    print(f"{bcolors.HEADER}Here's the document:\n=========================={bcolors.ENDC}")
+    print(f"{bcolors.OKCYAN}Here's the document:\n=========================={bcolors.ENDC}")
     print(doc['text'])
-    print(f"{bcolors.HEADER}=========================={bcolors.ENDC}")
+    print(f"{bcolors.OKCYAN}=========================={bcolors.ENDC}")
 
 
 def _select_entity(entities: list, field_to_print: str, prompt: str):
