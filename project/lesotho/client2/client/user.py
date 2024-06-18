@@ -45,6 +45,9 @@ def _read_document_by_id(doc_id: int):
 
 
 def _select_entity(entities: list, field_to_print: str, prompt: str):
+    if len(entities) == 0:
+        return None
+
     while True:
         for i, e in enumerate(entities):
             print(f"[{i + 1}.]\t{bcolors.BOLD} {e[field_to_print]} {bcolors.ENDC}")
@@ -62,21 +65,34 @@ def _select_entity(entities: list, field_to_print: str, prompt: str):
 
 def _select_document():
     all_docs = service.get_all_docs().json()
+
+    if len(all_docs) == 0:
+        print(f"{bcolors.WARNING}There are no documents in the system{bcolors.ENDC}")
+        return None
     return _select_entity(all_docs, 'name', 'Enter ordinal number of document:')
 
 
 def _select_user():
-    all_docs = service.get_all_users().json()
-    return _select_entity(all_docs, 'email', 'Enter email of user:')
+    all_users = service.get_all_users().json()
+    all_users = [u for u in all_users if u['email'] != state.STATE['email']]
+
+    if len(all_users) == 0:
+        print(f"{bcolors.WARNING}There are no users in the system to share with{bcolors.ENDC}")
+        return None
+    return _select_entity(all_users, 'email', 'Enter ordinal number of user:')
 
 
 def _edit_document():
     doc = _select_document()
+    if doc is None:
+        return
     _edit_document_by_id(doc['id'])
 
 
 def _read_document():
     doc = _select_document()
+    if doc is None:
+        return
     _read_document_by_id(doc['id'])
 
 
@@ -87,11 +103,15 @@ def _share_document():
     ]
         
     doc = _select_document()
+    if doc is None:
+        return
     if not service.check_access(state.STATE['id'], doc['id'], 'owner').json()['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to grant permissions to users for this document.{bcolors.ENDC}")
         return
     
     user_to_share_with = _select_user()
+    if user_to_share_with is None:
+        return
     if user_to_share_with['id'] == state.STATE['id']:
         print(f"{bcolors.FAIL}You cannot share with yourself.{bcolors.ENDC}")
         return
