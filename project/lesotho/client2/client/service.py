@@ -1,75 +1,68 @@
-from dataclasses import dataclass
 import json
 import requests
 
 API_URL = "http://127.0.0.1:5002"
 
-class SimpleResponse:
-    def __init__(self, resp: requests.Response):
-        self.status_code = resp.status_code
-        self.body = resp.json()
-        self.response_full = resp
 
-
-def log_in(email, password) -> SimpleResponse:
+def log_in(email, password) :
     r = requests.post(f'{API_URL}/login', json=json.dumps({
         'email': email,
         'password': password
     }))
-    return SimpleResponse(r)
+    return r
 
 
-def register(email, password) -> SimpleResponse:
+def register(email, password):
     r = requests.post(f'{API_URL}/register', json=json.dumps({
         'email': email,
         'password': password
     }))
-    return SimpleResponse(r)
+    return r
 
 
-def get_all_users() -> SimpleResponse:
+def get_all_users():
     r = requests.get(f'{API_URL}/user/all')
-    return SimpleResponse(r)
+    return r
 
 
-def new_doc(owner_id, name) -> SimpleResponse:
+def new_doc(owner_id, name):
     r = requests.post(f'{API_URL}/doc/new', json=json.dumps({
         'owner_id': owner_id,
         'name': name
     }))
-    return SimpleResponse(r)
+    return r
 
 
-def check_access(user_id, doc_id, relation) -> SimpleResponse:
+def check_access(user_id, doc_id, relation):
     r = requests.put(f'{API_URL}/doc/check', json=json.dumps({
         'user': user_id,
         'doc_id': doc_id,
         'relation': relation,
     }))
-    return SimpleResponse(r)
+    return r
 
 
-def share_doc(user_id, doc_id, relation) -> SimpleResponse:
+def share_doc(user_id, doc_id, relation):
     r = requests.post(f'{API_URL}/doc/share', json=json.dumps({
         'user': user_id,
         'doc_id': doc_id,
         'relation': relation,
     }))
-    return SimpleResponse(r)
+    return r
 
 
-def append_to_doc(doc_id, text) -> SimpleResponse:
+def append_to_doc(doc_id, text):
     r = requests.put(f'{API_URL}/doc/append', json=json.dumps({
         'doc_id': doc_id,
         'text': text,
     }))
-    return SimpleResponse(r)  
+    return r
 
 
-def get_doc_by_id(doc_id) -> SimpleResponse:
+def get_doc_by_id(doc_id):
     r = requests.get(f'{API_URL}/doc/{doc_id}')
-    return SimpleResponse(r)  
+    return r
 
-def get_all_docs() -> SimpleResponse:
+def get_all_docs():
     r = requests.get(f'{API_URL}/doc/all')
-    return SimpleResponse(r)
+    return r

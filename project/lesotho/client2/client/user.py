@@ -8,7 +8,7 @@ def _log_out():
 
 
 def _edit_document_by_id(doc_id: int):
-    if not service.check_access(state.STATE['id'], doc_id, 'editor').body['authorized']:
+    if not service.check_access(state.STATE['id'], doc_id, 'editor').json()['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to edit this document.{bcolors.ENDC}")
         return
     print(f"{bcolors.OKCYAN}You are in APPEND mode.\nType anything to make changes\nEnter a blank line to finish\n=========================={bcolors.ENDC}")
@@ -34,11 +34,11 @@ def _edit_document_by_id(doc_id: int):
         service.append_to_doc(doc_id, ss)
 
 def _read_document_by_id(doc_id: int):
-    if not service.check_access(state.STATE['id'], doc_id, 'viewer').body['authorized']:
+    if not service.check_access(state.STATE['id'], doc_id, 'viewer').json()['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to view this document.{bcolors.ENDC}")
         return
     
-    doc = service.get_doc_by_id(doc_id).body
+    doc = service.get_doc_by_id(doc_id).json()
     print(f"{bcolors.OKCYAN}Here's the document:\n=========================={bcolors.ENDC}")
     print(doc['text'])
     print(f"{bcolors.OKCYAN}=========================={bcolors.ENDC}")
@@ -61,12 +61,12 @@ def _select_entity(entities: list, field_to_print: str, prompt: str):
             continue
 
 def _select_document():
-    all_docs = service.get_all_docs().body
+    all_docs = service.get_all_docs().json()
     return _select_entity(all_docs, 'name', 'Enter ordinal number of document:')
 
 
 def _select_user():
-    all_docs = service.get_all_users().body
+    all_docs = service.get_all_users().json()
     return _select_entity(all_docs, 'email', 'Enter email of user:')
 
 
@@ -87,7 +87,7 @@ def _share_document():
     ]
         
     doc = _select_document()
-    if not service.check_access(state.STATE['id'], doc['id'], 'owner').body['authorized']:
+    if not service.check_access(state.STATE['id'], doc['id'], 'owner').json()['authorized']:
         print(f"{bcolors.FAIL}You are not authorized to grant permissions to users for this document.{bcolors.ENDC}")
         return
     
@@ -103,7 +103,7 @@ def _share_document():
 
 def _new_document():
     doc_name = input("Document name:")
-    doc = service.new_doc(state.STATE['id'], doc_name).body
+    doc = service.new_doc(state.STATE['id'], doc_name).json()
     _edit_document_by_id(doc['id'])
 
 
