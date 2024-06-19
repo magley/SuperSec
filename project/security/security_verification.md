@@ -106,5 +106,129 @@
 | 1.14.5 | Verify that application deployments adequately sandbox, containerize and/or isolate at the network level to delay and deter attackers from attacking other applications, especially when they are performing sensitive or dangerous actions such as deserialization. | 265 | **Не** |
 | 1.14.6 | Verify the application does not use unsupported, insecure, or deprecated client-side technologies such as NSAPI plugins, Flash, Shockwave, ActiveX, Silverlight, NACL, or client-side Java applets. | 477 | **Да** |
 
-### V2 Authentication
+## V2 Authentication
 
+### V2.1 Password Security
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 2.1.1 | Verify that user set passwords are at least 12 characters in length (after multiple spaces are combined) | 521 | 5.1.1.2 | **Да** |
+| 2.1.2 | Verify that passwords of at least 64 characters are permitted, and that passwords of more than 128 characters are denied. | 521 | 5.1.1.2 | **Да** |
+| 2.1.3 | Verify that password truncation is not performed. However, consecutive multiple spaces may be replaced by a single space. | 521 | 5.1.1.2 | **Да** |
+| 2.1.4 | Verify that any printable Unicode character, including language neutral characters such as spaces and Emojis are permitted in passwords. | 521 | 5.1.1.2 | **Не**, коришћен је `input()`. |
+| 2.1.5 | Verify users can change their password. | 620 | 5.1.1.2 | **Не** |
+| 2.1.6 | Verify that password change functionality requires the user's current and new password. | 620 | 5.1.1.2 | **N/A** |
+| 2.1.7 | Verify that passwords submitted during account registration, login, and password change are checked against a set of breached passwords either locally (such as the top 1,000 or 10,000 most common passwords which match the system's password policy) or using an external API. If using an API a zero knowledge proof or other mechanism should be used to ensure that the plain text password is not sent or used in verifying the breach status of the  password. If the password is breached, the application must require the user to set a new non-breached password. | 521 | 5.1.1.2 | **Не** |
+| 2.1.8 | Verify that a password strength meter is provided to help users set  a stronger password. | 521 | 5.1.1.2 | **Не**, јер је коришћен CLI |
+| 2.1.9 | Verify that there are no password composition rules limiting the  type of characters permitted. There should be no requirement for  upper or lower case or numbers or special characters. | 521 | 5.1.1.2 | **Да** |
+| 2.1.10 | Verify that there are no periodic credential rotation or password  history requirements. | 263 | 5.1.1.2 | **Да** |
+| 2.1.11 | Verify that "paste" functionality, browser password helpers, and  external password managers are permitted. | 521 | 5.1.1.2 | **Да** |
+| 2.1.12 | Verify that the user can choose to either temporarily view the  entire masked password, or temporarily view the last typed character of the password on platforms that do not have this as built-in functionality. | 521 | 5.1.1.2 | **Не** |
+
+### V2.2 General Authenticator Security
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 2.2.1 | Verify that anti-automation controls are effective at mitigating  breached credential testing, brute force, and account lockoutattacks. Such controls include blocking the most common  breached passwords, soft lockouts, rate limiting, CAPTCHA, ever  increasing delays between attempts, IP address restrictions, or  risk-based restrictions such as location, first login on a device,  recent attempts to unlock the account, or similar. Verify that no  more than 100 failed attempts per hour is possible on a single  account. | 307 | 5.2.2 / 5.1.1.2 / 5.1.4.2 / 5.1.5.2 | **Не** |
+| 2.2.2 | Verify that the use of weak authenticators (such as SMS and email) is limited to secondary verification and transaction approval and not as a replacement for more secure authentication methods. Verify that stronger methods are offered before weak methods, users are aware of the risks, or that proper measures are in place to limit the risks of account compromise. | 304 | 5.2.10.0 | **Не** |
+| 2.2.3 | Verify that secure notifications are sent to users after updates to authentication details, such as credential resets, email or address changes, logging in from unknown or risky locations. The use of push notifications - rather than SMS or email - is preferred, but in the absence of push notifications, SMS or email is acceptable as long as no sensitive information is disclosed in the notification. | 620 | | **Не** |
+| 2.2.4 | Verify impersonation resistance against phishing, such as the use of multi-factor authentication, cryptographic devices with intent (such as connected keys with a push to authenticate), or at higher AAL levels, client-side certificates. | 308 | 5.2.5 | **Не**
+| 2.2.5 | Verify that where a Credential Service Provider (CSP) and the  application verifying authentication are separated, mutually  authenticated TLS is in place between the two endpoints. | 319 | 5.2.6 | **Не** |
+| 2.2.6 | Verify replay resistance through the mandated use of One-time Passwords (OTP) devices, cryptographic authenticators, or lookup codes. | 308 | 5.2.8 | **Не** |
+| 2.2.7 | Verify intent to authenticate by requiring the entry of an OTP token or user-initiated action such as a button press on a FIDO hardware key. | 308 | 5.2.9 | **Не** |
+
+### V2.3 Authenticator Lifecycle
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 2.3.1 | Verify system generated initial passwords or activation codes  SHOULD be securely randomly generated, SHOULD be at least 6 characters long, and MAY contain letters and numbers, and expire after a short period of time. These initial secrets must not be permitted to become the long term password. | 330 | 5.1.1.2 | **N/A** |
+| 2.3.2 | Verify that enrollment and use of user-provided authentication  devices are supported, such as a U2F or FIDO tokens. | 308 | 6.1.3 | **Не**|
+| 2.3.3 | Verify that renewal instructions are sent with sufficient time to  renew time bound authenticators. | 287 | 6.1.4 | **Не** |
+
+### V2.4 Credential Storage
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 2.4.1 | Verify that passwords are stored in a form that is resistant to offline attacks. Passwords SHALL be salted and hashed using an approved one-way key derivation or password hashing function. Key derivation and password hashing functions take a password, a salt, and a cost factor as inputs when generating a password hash. | 916 | 5.1.1.2 | **Да**, коришћен је _bcrypt_. |
+| 2.4.2 | Verify that the salt is at least 32 bits in length and be chosen arbitrarily to minimize salt value collisions among stored hashes. For each credential, a unique salt value and the resulting hash SHALL be stored. | 916 | 5.1.1.2 | **Да** |
+| 2.4.3 | Verify that if PBKDF2 is used, the iteration count SHOULD be as large as verification server performance will allow, typically at least 100,000 iterations. | 916 | 5.1.1.2 | **N/A** |
+| 2.4.4 | Verify that if bcrypt is used, the work factor SHOULD be as large as  verification server performance will allow, with a minimum of 10. | 916 | 5.1.1.2 | **Да**, коришћена је подразумевана вредност од 12 ([извор](https://pypi.org/project/bcrypt/#:~:text=Adjustable%20Work%20Factor)) |
+| 2.4.5 | Verify that an additional iteration of a key derivation function is performed, using a salt value that is secret and known only to the verifier. Generate the salt value using an approved random bit generator [SP 800-90Ar1] and provide at least the minimum security strength specified in the latest revision of SP 800-131A. The secret salt value SHALL be stored separately from the hashed passwords (e.g., in a specialized device like a hardware security module). | 916 | 5.1.1.2 | **Не** |
+
+### V2.5 Credential Recovery
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 2.5.1 | Verify that a system generated initial activation or recovery secret is not sent in clear text to the user. | 640 | 5.1.1.2 | **N/A** |
+| 2.5.2 | Verify password hints or knowledge-based authentication (so-called "secret questions") are not present | 640 | 5.1.1.2 | **Да** |
+| 2.5.3 | Verify password credential recovery does not reveal the current password in any way. | 640 | 5.1.1.2 | **N/A** |
+| 2.5.4 | Verify shared or default accounts are not present (e.g. "root", "admin", or "sa"). | 16 | 5.1.1.2 | **Да** |
+| 2.5.5 | Verify that if an authentication factor is changed or replaced, that the user is notified of this event. | 304 | 6.1.2.3 | **N/A** |
+| 2.5.6 | Verify forgotten password, and other recovery paths use a secure recovery mechanism, such as time-based OTP (TOTP) or other soft token, mobile push, or another offline recovery mechanism. | 640 | 5.1.1.2 | **N/A** |
+| 2.5.7 | Verify that if OTP or multi-factor authentication factors are lost, that evidence of identity proofing is performed at the same level as during enrollment. | 308 | 6.1.2.3 | **N/A** |
+
+### V2.6 Look-up Secret Verifier
+
+Није апликабилно за овај пројекат.
+
+### V2.7 Out of Band Verifier
+
+Није апликабилно за овај пројекат.
+
+### V2.8 One Time Verifier
+
+Није апликабилно за овај пројекат.
+
+### V2.9 Cryptographic Verifier
+
+Није апликабилно за овај пројекат.
+
+### V2.10 Service Authentication
+
+Није апликабилно за овај пројекат.
+
+## V3 Session Management
+
+### V3.1 Fundamental Session Management Security
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 3.1.1 | Verify the application never reveals session tokens in URL parameters. | 598 | | **Да** |
+
+### V3.2 Session Binding
+
+Није апликабилно за овај пројекат.
+
+### V3.3 Session Termination
+
+Није апликабилно за овај пројекат. Сесије су локалне и чувају се у радној меморији клијента (demo2).
+
+### V3.4 Cookie-based Session Management
+
+Није апликабилно за овај пројекат. Не користе се кукији.
+
+### V3.5 Cookie-based Session Management
+
+Није апликабилно за овај пројекат. Не користе се JWT/OAuth/SAML кључеви.
+
+### V3.6 Federated Re-authentication
+
+Није апликабилно за овај пројекат.
+
+### V3.7 Defenses Against Session Management Exploits
+
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 3.7.1 | Verify the application ensures a full, valid login session or requires re-authentication or secondary verification before allowing any sensitive transactions or account modifications. | 306 | | **Не** |
+
+## V4 Access Control
+
+### V4.1 General Access Control Design
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 4.1.1 | Verify that the application enforces access control rules on a trusted service layer, especially if client-side access control is present and could be bypassed. | 602 | ** ** |
+| 4.1.2 | | | |
+| 4.1.3 | | | |
+| 4.1.4 | | | |
+| 4.1.5 | | | | 
