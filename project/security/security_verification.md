@@ -227,8 +227,155 @@
 
 | Број  | Опис | CWE | Испуњеност |
 | ----- | ---- | --- | ---------- |
-| 4.1.1 | Verify that the application enforces access control rules on a trusted service layer, especially if client-side access control is present and could be bypassed. | 602 | ** ** |
-| 4.1.2 | | | |
-| 4.1.3 | | | |
-| 4.1.4 | | | |
-| 4.1.5 | | | | 
+| 4.1.1 | Verify that the application enforces access control rules on a trusted service layer, especially if client-side access control is present and could be bypassed. | 602 | **Да** |
+| 4.1.2 | Verify that all user and data attributes and policy information used by access controls cannot be manipulated by end users unless specifically authorized. | 639 | **Да** |
+| 4.1.3 | Verify that the principle of least privilege exists - users should only be able to access functions, data files, URLs, controllers, services, and other resources, for which they possess specific authorization. This implies protection against spoofing and elevation of privilege.| 285 | **?** |
+| 4.1.4 | [DELETED, DUPLICATE OF 4.1.3] | | |
+| 4.1.5 | Verify that access controls fail securely including when an exception occurs. | 285 | **Не** | 
+
+### V4.2 Operation Level Access Control
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 4.2.1 | Verify that sensitive data and APIs are protected against Insecure Direct Object Reference (IDOR) attacks targeting creation, reading, updating and deletion of records, such as creating or updating someone else's record, viewing everyone's records, or deleting all records. | 639 | **Да**, сваком захтеву претходи access control. |
+| 4.2.2 | Verify that the application or framework enforces a strong anti-CSRF mechanism to protect authenticated functionality, and effective anti-automation or anti-CSRF protects unauthenticated functionalit | 352 | **Да**, CSRF није могућ. |
+
+### V4.3 Other Access Control Considerations
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 4.3.1 | Verify administrative interfaces use appropriate multi-factor authentication to prevent unauthorized use. | 419 | **N/A** |
+| 4.3.2 | Verify that directory browsing is disabled unless deliberately desired. Additionally, applications should not allow discovery or disclosure of file or directory metadata, such as Thumbs.db, .DS_Store, .git or .svn folders. | 548 | **N/A** |
+| 4.3.3 | Verify the application has additional authorization (such as step up or adaptive authentication) for lower value systems, and / or segregation of duties for high value applications to enforce anti-fraud controls as per the risk of application and past fraud. | 732 | **N/A** |
+
+## V5 Validation, Sanitization and Encoding
+
+### V5.1 Input Validation
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 5.1.1 | Verify that the application has defenses against HTTP parameter pollution  attacks, particularly if the application framework makes no distinction about  the source of request parameters (GET, POST, cookies, headers, or  environment variables). | 235 | **Да** |
+| 5.1.2 | Verify that frameworks protect against mass parameter assignment attacks,  or that the application has countermeasures to protect against unsafe  parameter assignment, such as marking fields private or similar. | 915 | **Да** |
+| 5.1.3 | Verify that all input (HTML form fields, REST requests, URL parameters, HTTP  headers, cookies, batch files, RSS feeds, etc) is validated using positive  validation (allow lists). | 20 | **Не** |
+| 5.1.4 | Verify that structured data is strongly typed and validated against a defined  schema including allowed characters, length and pattern (e.g. credit card  numbers, e-mail addresses, telephone numbers, or validating that two related  fields are reasonable, such as checking that suburb and zip/postcode match). | 20 | **Не** (парцијална валидација постоји) |
+| 5.1.5 | Verify that URL redirects and forwards only allow destinations which appear  on an allow list, or show a warning when redirecting to potentially untrusted  content. | 601 | **N/A** |
+
+### V5.2 Sanitization and Sandboxing
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 5.2.1 | Verify that all untrusted HTML input from WYSIWYG editors or similar is  properly sanitized with an HTML sanitizer library or framework feature. | 116 | **N/A** |
+| 5.2.2 | Verify that unstructured data is sanitized to enforce safety measures such as  allowed characters and length. | 138 | **Не** |
+| 5.2.3 | Verify that the application sanitizes user input before passing to mail systems  to protect against SMTP or IMAP injection. | 147 | **N/A** |
+| 5.2.4 | Verify that the application avoids the use of eval() or other dynamic code  execution features. Where there is no alternative, any user input being  included must be sanitized or sandboxed before being executed. | 95 | **Да** |
+| 5.2.5 | Verify that the application protects against template injection attacks by  ensuring that any user input being included is sanitized or sandboxed. | 94 | **N/A** |
+| 5.2.6 | Verify that the application protects against SSRF attacks, by validating or  sanitizing untrusted data or HTTP file metadata, such as filenames and URL  input fields, and uses allow lists of protocols, domains, paths and ports. | 918 | **N/A** |
+| 5.2.7 | Verify that the application sanitizes, disables, or sandboxes user-supplied  Scalable Vector Graphics (SVG) scriptable content, especially as they relate to  XSS resulting from inline scripts, and foreignObject. | 159 | **N/A** |
+| 5.2.8 | Verify that the application sanitizes, disables, or sandboxes user-supplied  scriptable or expression template language content, such as Markdown, CSS  or XSL stylesheets, BBCode, or similar. | 94 | **N/A** |
+
+### V5.3 Output Encoding and Injection Prevention
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 5.3.1 | Verify that output encoding is relevant for the interpreter and context  required. For example, use encoders specifically for HTML values, HTML  attributes, JavaScript, URL parameters, HTTP headers, SMTP, and others as  the context requires, especially from untrusted inputs (e.g. names with  Unicode or apostrophes, such as ねこ or O'Hara). | 116 | **Не** |
+| 5.3.2 | Verify that output encoding preserves the user's chosen character set and  locale, such that any Unicode character point is valid and safely handled. | 176 | **Не** |
+| 5.3.3 | Verify that context-aware, preferably automated - or at worst, manual - output escaping protects against reflected, stored, and DOM based XSS. | 79 | **Не** |
+| 5.3.4 | Verify that data selection or database queries (e.g. SQL, HQL, ORM, NoSQL)  use parameterized queries, ORMs, entity frameworks, or are otherwise  protected from database injection attacks. | 89 | **N/A** |
+| 5.3.5 | Verify that where parameterized or safer mechanisms are not present,  context-specific output encoding is used to protect against injection attacks,  such as the use of SQL escaping to protect against SQL injection. | 89 | **N/A** |
+| 5.3.6 | Verify that the application protects against JSON injection attacks, JSON eval  attacks, and JavaScript expression evaluation. | 830 | **?** |
+| 5.3.7 | Verify that the application protects against LDAP injection vulnerabilities, or  that specific security controls to prevent LDAP injection have been  implemented. | 90 | **N/A** |
+| 5.3.8 | Verify that the application protects against OS command injection and that  operating system calls use parameterized OS queries or use contextual  command line output encoding. | 78 | **N/A** |
+| 5.3.9 | Verify that the application protects against Local File Inclusion (LFI) or  Remote File Inclusion (RFI) attacks. | 829 | **N/A** |
+| 5.3.10 | Verify that the application protects against XPath injection or XML injection  attacks.  | 643 | **N/A** |
+
+### V5.4 Memory, String, and Unmanaged Code
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 5.4.1 | Verify that the application uses memory-safe string, safer memory copy and  pointer arithmetic to detect or prevent stack, buffer, or heap overflows. | 120 | **?** |
+| 5.4.2 | Verify that format strings do not take potentially hostile input, and are  constant. | 134 | **Не** (парцијално задовољено) |
+| 5.4.3 | Verify that sign, range, and input validation techniques are used to prevent  integer overflows. | 190 | **N/A** |
+
+### V5.5 Deserialization Prevention
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 5.5.1 | Verify that serialized objects use integrity checks or are encrypted to prevent  hostile object creation or data tampering. | 502 | **Да** |
+| 5.5.2 | Verify that the application correctly restricts XML parsers to only use the most  restrictive configuration possible and to ensure that unsafe features such as  resolving external entities are disabled to prevent XML eXternal Entity (XXE)  attacks. | 611 | **N/A** |
+| 5.5.3 | Verify that deserialization of untrusted data is avoided or is protected in both  custom code and third-party libraries (such as JSON, XML and YAML parsers). | 502 | **Не** |
+| 5.5.4 | Verify that when parsing JSON in browsers or JavaScript-based backends,  JSON.parse is used to parse the JSON document. Do not use eval() to parse  JSON. | 95 | **Да** |
+
+## V6 Stored Cryptography
+
+Ово поглавље није разматрано за овај пројекат.
+
+## V7 Error Handling and Logging
+
+### V7.1 Log Content
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 7.1.1 | Verify that the application does not log credentials or payment details.  Session tokens should only be stored in logs in an irreversible, hashed form. | 532 | **Да** |
+| 7.1.2 | Verify that the application does not log other sensitive data as defined under  local privacy laws or relevant security policy. | 532 | **Да** |
+| 7.1.3 | Verify that the application logs security relevant events including successful  and failed authentication events, access control failures, deserialization  failures and input validation failures. | 778 | **Не** |
+| 7.1.4 | Verify that each log event includes necessary information that would allow for  a detailed investigation of the timeline when an event happens. | 778 | **Не** |
+
+### V7.2 Log Processing
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 7.2.1 | Verify that all authentication decisions are logged, without storing sensitive  session tokens or passwords. This should include requests with relevant  metadata needed for security investigations. | 778 | **Не** |
+| 7.2.2 | Verify that all access control decisions can be logged and all failed decisions  are logged. This should include requests with relevant metadata needed for  security investigations. | 285 | **Не** |
+
+### V7.3 Log Protection
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 7.3.1 | Verify that all logging components appropriately encode data to prevent log  injection. | 117 | **N/A** |
+| 7.3.2 | [DELETED, DUPLICATE OF 7.3.1] |  | |
+| 7.3.3 | Verify that security logs are protected from unauthorized access and  modification. | 200 | **N/A** |
+| 7.3.4 | Verify that time sources are synchronized to the correct time and time zone.  Strongly consider logging only in UTC if systems are global to assist with post-incident forensic analysis. |  | **Не** |
+
+### V7.4 Error Handling
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 7.4.1 | Verify that a generic message is shown when an unexpected or security  sensitive error occurs, potentially with a unique ID which support personnel  can use to investigate.  | 210 | **Не**, порука је дескриптивна |
+| 7.4.2 | Verify that exception handling (or a functional equivalent) is used across the  codebase to account for expected and unexpected error conditions. | 533 | **Да** |
+| 7.4.3 | Verify that a "last resort" error handler is defined which will catch all  unhandled exceptions.  | 431 | **?**, није познато за сам Lesotho сервис где је коришћен Go. |
+
+## V8 Data Protection
+
+### V8.1 General Data Protection
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 8.1.1 | Verify the application protects sensitive data from being cached in server  components such as load balancers and application caches. | 524 | **Да**, кеширање је ручно и једино се кешира namespace који нема осетљиве податке. |
+| 8.1.2 | Verify that all cached or temporary copies of sensitive data stored on the  server are protected from unauthorized access or purged/invalidated after  the authorized user accesses the sensitive data. | 524 | **N/A**, |
+| 8.1.3 | Verify the application minimizes the number of parameters in a request, such  as hidden fields, Ajax variables, cookies and header values. | 233 | **Да** |
+| 8.1.4 | Verify the application can detect and alert on abnormal numbers of requests,  such as by IP, user, total per hour or day, or whatever makes sense for the  application. | 770 | **Не** |
+| 8.1.5 | Verify that regular backups of important data are performed and that test  restoration of data is performed. | 19 | **Не** |
+| 8.1.6 | Verify that backups are stored securely to prevent data from being stolen or  corrupted. | 19 | **N/A** |
+
+### V8.2 Client-side Data Protection
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 8.2.1 | Verify the application sets sufficient anti-caching headers so that sensitive  data is not cached in modern browsers. | 525 | **N/A** |
+| 8.2.2 | Verify that data stored in browser storage (such as localStorage,  sessionStorage, IndexedDB, or cookies) does not contain sensitive data. | 922 | **N/A** |
+| 8.2.3 | Verify that authenticated data is cleared from client storage, such as the  browser DOM, after the client or session is terminated. | 922 | **N/A** |
+
+### V8.3 Sensitive Private Data
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 8.3.1 | Verify that sensitive data is sent to the server in the HTTP message body or  headers, and that query string parameters from any HTTP verb do not contain  sensitive data. | 319 | **Да** |
+| 8.3.2 | Verify that users have a method to remove or export their data on demand.  | 212 | **Не** |
+| 8.3.3 | Verify that users are provided clear language regarding collection and use of  supplied personal information and that users have provided opt-in consent  for the use of that data before it is used in any way. | 285 | **Не** |
+| 8.3.4 | Verify that all sensitive data created and processed by the application has  been identified, and ensure that a policy is in place on how to deal with  sensitive data. | 200 | **Не** |
+| 8.3.5 | Verify accessing sensitive data is audited (without logging the sensitive data  itself), if the data is collected under relevant data protection directives or  where logging of access is required. | 532 | **N/A** |
+| 8.3.6 | Verify that sensitive information contained in memory is overwritten as soon  as it is no longer required to mitigate memory dumping attacks, using zeroes  or random data. | 226 | **N/A** |
+| 8.3.7 | Verify that sensitive or private information that is required to be encrypted, is  encrypted using approved algorithms that provide both confidentiality and  integrity.  | 327 | **Да** |
+| 8.3.8 | Verify that sensitive personal information is subject to data retention  classification, such that old or out of date data is deleted automatically, on a  schedule, or as the situation requires. | 285 | **N/A** |
+
+## V9 Communication
