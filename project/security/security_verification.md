@@ -379,3 +379,199 @@
 | 8.3.8 | Verify that sensitive personal information is subject to data retention  classification, such that old or out of date data is deleted automatically, on a  schedule, or as the situation requires. | 285 | **N/A** |
 
 ## V9 Communication
+
+### V9.1 Client Communication Security
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 9.1.1 | Verify that TLS is used for all client connectivity, and does not fall back to  insecure or unencrypted communications. | 319 | **Не** |
+| 9.1.2 | Verify using up to date TLS testing tools that only strong cipher suites are  enabled, with the strongest cipher suites set as preferred.| 326 | **Не** |
+| 9.1.3 | Verify that only the latest recommended versions of the TLS protocol are  enabled, such as TLS 1.2 and TLS 1.3. The latest version of the TLS protocol should be the preferred option.| 326 | **Не** |
+
+### V9.2 Server Communication Security
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 9.2.1 | Verify that connections to and from the server use trusted TLS certificates.  Where internally generated or self-signed certificates are used, the server  must be configured to only trust specific internal CAs and specific self-signed  certificates. All others should be rejected.| 295 | **Не** |
+| 9.2.2 | Verify that encrypted communications such as TLS is used for all inbound and  outbound connections, including for management ports, monitoring,  authentication, API, or web service calls, database, cloud, serverless,  mainframe, external, and partner connections. The server must not fall back  to insecure or unencrypted protocols.| 319 | **Не** |
+| 9.2.3 | Verify that all encrypted connections to external systems that involve  sensitive information or functions are authenticated.| 287 | **Не** |
+| 9.2.4 | Verify that proper certification revocation, such as Online Certificate Status  Protocol (OCSP) Stapling, is enabled and configured.| 299 | **Не** |
+| 9.2.5 | Verify that backend TLS connection failures are logged.| 544 | **Не** |
+
+## V10 Malicious Code
+
+### V10.1 Code Integrity
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 10.1.1 | Verify that a code analysis tool is in use that can detect potentially malicious  code, such as time functions, unsafe file operations and network  connections.| 749 | **Да**, коришћени су алати за анализу кода. |
+
+### V10.2 Code Integrity
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 10.2.1 | Verify that the application source code and third party libraries do not  contain unauthorized phone home or data collection capabilities. Where  such functionality exists, obtain the user's permission for it to operate before  collecting any data.| 359 | **Да** |
+| 10.2.2 | Verify that the application does not ask for unnecessary or excessive  permissions to privacy related features or sensors, such as contacts,  cameras, microphones, or location.| 272 | **Да** |
+| 10.2.3 | Verify that the application source code and third party libraries do not  contain back doors, such as hard-coded or additional undocumented  accounts or keys, code obfuscation, undocumented binary blobs, rootkits, or  anti-debugging, insecure debugging features, or otherwise out of date,  insecure, or hidden functionality that could be used maliciously if  discovered.| 507 | **Вероватно**, апликација сигурно нема, али за библиотеке никад не можемо бити сигурни (пример: xz) |
+| 10.2.4 | Verify that the application source code and third party libraries do not  contain time bombs by searching for date and time related functions.| 511 | **Вероватно** |
+| 10.2.5 | Verify that the application source code and third party libraries do not  contain malicious code, such as salami attacks, logic bypasses, or logic  bombs.| 511 | **Вероватно** |
+| 10.2.6 | Verify that the application source code and third party libraries do not  contain Easter eggs or any other potentially unwanted functionality.| 507 | **Вероватно** |
+
+### V10.3 Code Integrity
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 10.3.1 | Verify that if the application has a client or server auto-update feature,  updates should be obtained over secure channels and digitally signed. The  update code must validate the digital signature of the update before  installing or executing the update.|  16 | **Да**, нема auto update |
+| 10.3.2 | Verify that the application employs integrity protections, such as code  signing or subresource integrity. The application must not load or execute  code from untrusted sources, such as loading includes, modules, plugins,  code, or libraries from untrusted sources or the Internet.| 353 | **Не**  |
+| 10.3.3 | Verify that the application has protection from subdomain takeovers if the  application relies upon DNS entries or DNS subdomains, such as expired  domain names, out of date DNS pointers or CNAMEs, expired projects at  public source code repos, or transient cloud APIs, serverless functions, or  storage buckets (autogen-bucket-id.cloud.example.com) or similar.  Protections can include ensuring that DNS names used by applications are  regularly checked for expiry or change.| 350 | **Да** |
+
+## V11 Business Logic
+
+### V11.1 Business Logic Security
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 11.1.1 | Verify that the application will only process business logic flows for the same  user in sequential step order and without skipping steps.| 841 | **Да** |
+| 11.1.2 | Verify that the application will only process business logic flows with all steps  being processed in realistic human time, i.e. transactions are not submitted  too quickly.| 799 | **Не** |
+| 11.1.3 | Verify the application has appropriate limits for specific business actions or  transactions which are correctly enforced on a per user basis.| 770 | **Не** |
+| 11.1.4 | Verify that the application has anti-automation controls to protect against  excessive calls such as mass data exfiltration, business logic requests, file  uploads or denial of service attacks.| 770 | **Не** |
+| 11.1.5 | Verify the application has business logic limits or validation to protect  against likely business risks or threats, identified using threat modeling or  similar methodologies.| 841 | **Не** |
+| 11.1.6 | Verify that the application does not suffer from "Time Of Check to Time Of  Use" (TOCTOU) issues or other race conditions for sensitive operations.| 367 | **?** |
+| 11.1.7 | Verify that the application monitors for unusual events or activity from a  business logic perspective. For example, attempts to perform actions out of  order or actions which a normal user would never attempt.| 754 | **Не** |
+| 11.1.8 | Verify that the application has configurable alerting when automated attacks  or unusual activity is detected.| 390 | **Не** |
+
+## V12 Files and Resources
+
+### V12.1 File Upload
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 12.1.1 | Verify that the application will not accept large files that could fill up storage  or cause a denial of service.| 400 | **Не** |
+| 12.1.2 | Verify that the application checks compressed files (e.g. zip, gz, docx, odt)  against maximum allowed uncompressed size and against maximum number  of files before uncompressing the file.| 409 | **Не**, не користе се компресовани фајлови |
+| 12.1.3 | Verify that a file size quota and maximum number of files per user is  enforced to ensure that a single user cannot fill up the storage with too  many files, or excessively large files.| 770 | **Не** |
+
+### V12.2 File Integrity
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 12.2.1 | Verify that files obtained from untrusted sources are validated to be of  expected type based on the file's content.| 434 | **Да** |
+
+### V12.3 File Execution
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 12.3.1 | Verify that user-submitted filename metadata is not used directly by system  or framework filesystems and that a URL API is used to protect against path  traversal.|  22 | **Да**, не користимо овакве механизме |
+| 12.3.2 | Verify that user-submitted filename metadata is validated or ignored to  prevent the disclosure, creation, updating or removal of local files (LFI).|  73 | **Даa** |
+| 12.3.3 | Verify that user-submitted filename metadata is validated or ignored to  prevent the disclosure or execution of remote files via Remote File Inclusion  (RFI) or Server-side Request Forgery (SSRF) attacks.|  98 | **Да** |
+| 12.3.4 | Verify that the application protects against Reflective File Download (RFD) by  validating or ignoring user-submitted filenames in a JSON, JSONP, or URL  parameter, the response Content-Type header should be set to text/plain,  and the Content-Disposition header should have a fixed filename.| 641 | **Не** |
+| 12.3.5 | Verify that untrusted file metadata is not used directly with system API or  libraries, to protect against OS command injection.|  78 | **Да** |
+| 12.3.6 | Verify that the application does not include and execute functionality from  untrusted sources, such as unverified content distribution networks,  JavaScript libraries, node npm libraries, or server-side DLLs.| 829 | **Да** |
+
+### V12.4 File Storage
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 12.4.1 | Verify that files obtained from untrusted sources are stored outside the web  root, with limited permissions.| 552 | **Не** |
+| 12.4.2 | Verify that files obtained from untrusted sources are scanned by antivirus  scanners to prevent upload and serving of known malicious content.| 509 | **Не** |
+
+### V12.5 File Download
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 12.5.1 | Verify that the web tier is configured to serve only files with specific file  extensions to prevent unintentional information and source code leakage.  For example, backup files (e.g. .bak), temporary working files (e.g. .swp),  compressed files (.zip, .tar.gz, etc) and other extensions commonly used by  editors should be blocked unless required.| 552 | **N/A** |
+| 12.5.2 | Verify that direct requests to uploaded files will never be executed as  HTML/JavaScript content.| 434 | **N/A** |
+
+### V12.6 SSRF Protection
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 12.6.1 | Verify that the web or application server is configured with an allow list of  resources or systems to which the server can send requests or load data/files  from.| 918 | **a** |
+
+## V13 API and Web Service
+
+### V13.1 Generic Web Service Security
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 13.1.1 | Verify that all application components use the same encodings and parsers  to avoid parsing attacks that exploit different URI or file parsing behavior  that could be used in SSRF and RFI attacks.| 116 | **?** |
+| 13.1.2 |  [DELETED, DUPLICATE OF 4.3.1] | | |
+| 13.1.3 | Verify API URLs do not expose sensitive information, such as the API key,  session tokens etc.| 598 | **Да** |
+| 13.1.4 | Verify that authorization decisions are made at both the URI, enforced by  programmatic or declarative security at the controller or router, and at the  resource level, enforced by model-based permissions.| 285 | **?** |
+| 13.1.5 | Verify that requests containing unexpected or missing content types are  rejected with appropriate headers (HTTP response status 406 Unacceptable  or 415 Unsupported Media Type).| 434 | **Не** |
+
+### V13.2 RESTful Web Service
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 13.2.1 | Verify that enabled RESTful HTTP methods are a valid choice for the user or  action, such as preventing normal users using DELETE or PUT on protected  API or resources.| 650 | **Да** |
+| 13.2.2 | Verify that JSON schema validation is in place and verified before accepting  input.| 20  | **Да** |
+| 13.2.3 | Verify that RESTful web services that utilize cookies are protected from  Cross-Site Request Forgery via the use of at least one or more of the  following: double submit cookie pattern, CSRF nonces, or Origin request  header checks.| 352 | **Да**, не користе се кукији |
+| 13.2.4 | [DELETED, DUPLICATE OF 11.1.4]| | |
+| 13.2.5 | Verify that REST services explicitly check the incoming Content-Type to be  the expected one, such as application/xml or application/json.| 436 | **Не** |
+| 13.2.6 | Verify that the message headers and payload are trustworthy and not  modified in transit. Requiring strong encryption for transport (TLS only) may  be sufficient in many cases as it provides both confidentiality and integrity  protection. Per-message digital signatures can provide additional assurance  on top of the transport protections for high-security applications but bring  with them additional complexity and risks to weigh against the benefits.| 345 | **Не** |
+
+### V13.3 SOAP Web Service
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 13.3.1 | Verify that XSD schema validation takes place to ensure a properly formed  XML document, followed by validation of each input field before any  processing of that data takes place.|  20 | **N/A** |
+| 13.3.2 | Verify that the message payload is signed using WS-Security to ensure  reliable transport between client and service.| 345 | **Не** |
+
+### V13.4 GraphQL
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 13.4.1 | Verify that a query allow list or a combination of depth limiting and amount  limiting is used to prevent GraphQL or data layer expression Denial of  Service (DoS) as a result of expensive, nested queries. For more advanced  scenarios, query cost analysis should be used.| 770 | **N/A** |
+| 13.4.2 | Verify that GraphQL or other data layer authorization logic should be  implemented at the business logic layer instead of the GraphQL layer.| 285 | **N/A** |
+
+## V14 Configuration
+
+### V14.1 Build and Deploy
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 14.1.1 | Verify that the application build and deployment processes are performed in  a secure and repeatable way, such as CI / CD automation, automated  configuration management, and automated deployment scripts.|  | **Не** |
+| 14.1.2 | Verify that compiler flags are configured to enable all available buffer  overflow protections and warnings, including stack randomization, data  execution prevention, and to break the build if an unsafe pointer, memory,  format string, integer, or string operations are found.| 120  | **Да**, Golang подразумевано нуди подршку |
+| 14.1.3 | Verify that server configuration is hardened as per the recommendations of  the application server and frameworks in use.| 16 | **Не** |
+| 14.1.4 | Verify that the application, configuration, and all dependencies can be re-deployed using automated deployment scripts, built from a documented and  tested runbook in a reasonable time, or restored from backups in a timely  fashion.|  | **Не** |
+| 14.1.5 | Verify that authorized administrators can verify the integrity of all security-relevant configurations to detect tampering.|  | **Не** |
+
+### V14.2 Build and Deploy
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 14.2.1 | Verify that all components are up to date, preferably using a dependency  checker during build or compile time.| 1026 | **Да**, али мануелно се ради |
+| 14.2.2 | Verify that all unneeded features, documentation, sample applications and  configurations are removed.| 1002  | **Да**, мада sample апликације су део пројекта и сачуване су. |
+| 14.2.3 | Verify that if application assets, such as JavaScript libraries, CSS or web  fonts, are hosted externally on a Content Delivery Network (CDN) or  external provider, Subresource Integrity (SRI) is used to validate the integrity  of the asset.| 829 | **Не** |
+| 14.2.4 | Verify that third party components come from pre-defined, trusted and  continually maintained repositories.| 829 | **Да** |
+| 14.2.5 | Verify that a Software Bill of Materials (SBOM) is maintained of all third  party libraries in use.|  | **Не** |
+| 14.2.6 | Verify that the attack surface is reduced by sandboxing or encapsulating  third party libraries to expose only the required behaviour into the  application.| 265 | **Не** |
+
+### V14.3 Unintended Security Disclosure
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 14.3.1 | [DELETED, DUPLICATE OF 7.4.1]|  |  |
+| 14.3.2 | Verify that web or application server and application framework debug  modes are disabled in production to eliminate debug features, developer  consoles, and unintended security disclosures.| 497  | **N/A**, пројекат није постављан ван debug режима |
+| 14.3.3 | Verify that the HTTP headers or any part of the HTTP response do not expose  detailed version information of system components.| 200 | **Да** |
+
+### V14.4 HTTP Security Headers
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 14.4.1 | Verify that every HTTP response contains a Content-Type header. Also  specify a safe character set (e.g., UTF-8, ISO-8859-1) if the content types are  text/*, /+xml and application/xml. Content must match with the provided  Content-Type header.| 173 | **Да**, библиотеке (flask, go) раде ово уместо нас |
+| 14.4.2 | Verify that all API responses contain a Content-Disposition: attachment;  filename="api.json" header (or other appropriate filename for the content  type).| 116  | **Не** |
+| 14.4.3 | Verify that a Content Security Policy (CSP) response header is in place that  helps mitigate impact for XSS attacks like HTML, DOM, JSON, and JavaScript  injection vulnerabilities.| 1021 | **?** |
+| 14.4.4 | Verify that all responses contain a X-Content-Type-Options: nosniff header. | 116 | **Не** |
+| 14.4.5 | Verify that a Strict-Transport-Security header is included on all responses  and for all subdomains, such as Strict-Transport-Security: max-age=15724800; includeSubdomains.| 523  | **Не** |
+| 14.4.6 | Verify that a suitable Referrer-Policy header is included to avoid exposing  sensitive information in the URL through the Referer header to untrusted  parties.| 116 | **Не** |
+| 14.4.7 | Verify that the content of a web application cannot be embedded in a third-party site by default and that embedding of the exact resources is only  allowed where necessary by using suitable Content-Security-Policy: frame-ancestors and X-Frame-Options response head| 1021 | **?** |
+
+### V14.5 HTTP Request Header Validation
+
+| Број  | Опис | CWE | Испуњеност |
+| ----- | ---- | --- | ---------- |
+| 14.5.1 | Verify that the application server only accepts the HTTP methods in use by  the application/API, including pre-flight OPTIONS, and logs/alerts on any  requests that are not valid for the application context.| 749 | **Да** (парцијално) |
+| 14.5.2 | Verify that the supplied Origin header is not used for authentication or  access control decisions, as the Origin header can easily be changed by an  attacker.| 346  | **Да** |
+| 14.5.3 | Verify that the Cross-Origin Resource Sharing (CORS) Access-Control-Allow-Origin header uses a strict allow list of trusted domains and subdomains to  match against and does not support the "null" origin.| 346 | **Не** |
+| 14.5.4 | Verify that HTTP headers added by a trusted proxy or SSO devices, such as a  bearer token, are authenticated by the application.| 306 | **N/A** |
