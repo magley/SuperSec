@@ -99,7 +99,7 @@ API
 
 ## Идентификација претњи
 
-**Категорије (STRIDE)**: Spoofing, Tampering, Repuditation, Info Disclosure, Denial of Service, Elevation of Privelege
+**Категорије (STRIDE)**: Spoofing, Tampering, Repudiation, Info Disclosure, Denial of Service, Elevation of Privelege
 
 **Компоненте**: Web App, Cli App, API Server, API2 Server, Lesotho, LevelDB, Consul
 
