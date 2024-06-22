@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "knip": "knip"
   },
   "dependencies": {
     "d3": "^7.9.0",
@@ -14,7 +15,10 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
+    "@types/node": "^20.14.8",
     "@vitejs/plugin-vue": "^5.0.4",
+    "knip": "^5.22.2",
+    "typescript": "^5.5.2",
     "vite": "^5.2.8"
   }
 }
