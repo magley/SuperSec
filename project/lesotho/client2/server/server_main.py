@@ -27,6 +27,8 @@ def register():
 
     if userRepo.find_by_email(body['email']) != None:
         return make_response(jsonify({"error": "Email is already taken"}), 400)
+    if not (12 <= len(body['password']) <= 128):
+        return make_response(jsonify({"error": "Password should be between 12 and 128 characters long"}), 400)
 
     userRepo.save(body['email'], body['password'])
     return make_response(jsonify({}), 200)
