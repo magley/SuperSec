@@ -44,7 +44,9 @@ def login():
 
     u = userRepo.find_by_email_password(body['email'], body['password'])
     if u is None:
+        logger.info(f"Failed login attempt for {body['email']}")
         return make_response({'error': "User not found"}, 404)
+    logger.info(f"Successful login attempt for {body['email']}")
     return make_response(jsonify({'id': u['id'], 'email': u['email']}), 200)
 
 
@@ -53,10 +55,13 @@ def register():
     body = json.loads(request.json)
 
     if userRepo.find_by_email(body['email']) != None:
+        logger.info(f"Failed registration to existing email {body['email']}")
         return make_response(jsonify({"error": "Email is already taken"}), 400)
     if not (12 <= len(body['password']) <= 128):
+        logger.info(f"Failed registration to {body['email']} (password too short)")
         return make_response(jsonify({"error": "Password should be between 12 and 128 characters long"}), 400)
 
+    logger.info(f"Successful registration for {body['email']}")
     userRepo.save(body['email'], body['password'])
     return make_response(jsonify({}), 200)
 
@@ -89,6 +94,10 @@ def new_doc():
 def check_doc_permission():
     body = json.loads(request.json)
     authorized = service.check_acl(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
+    if not authorized:
+        logger.info(f"Unauthorized access from {body['user']} to {body['doc_id']} {body['relation']}")
+    else:
+        logger.info(f"User {body['user']} accessed for {body['doc_id']} as {body['relation']}")
     return authorized
 
 
@@ -96,6 +105,7 @@ def check_doc_permission():
 def share_doc():
     body = json.loads(request.json)
     service.add_acl_directive(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
+    logger.info(f"Document {body['doc_id']} shared with {body['user']} as {body['relation']}")
     return make_response(jsonify(body), 200)
 
 
