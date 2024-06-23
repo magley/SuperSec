@@ -2,6 +2,7 @@ package acl
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -74,10 +75,21 @@ func (acl *ACL) Has(directive *ACLDirective) bool {
 
 // ACLDirective is stored as key-val pair where key is {object}-{user} and val is {relation}
 func (acl *ACL) Add(aclDirective ACLDirective, nss *ns.NamespaceStore) error {
-	_, err := nss.HasNamespace(aclDirective.Namespace())
+	namespace := aclDirective.Namespace()
+
+	_, err := nss.HasNamespace(namespace)
 	if err != nil {
 		return err
 	}
+
+	canBeSetDirectly, err := nss.RelationHasThis(namespace, aclDirective.Relation)
+	if !canBeSetDirectly {
+		return fmt.Errorf("relation '%s' in namespace '%s' cannot be set directly (tried adding ACL directive '%s')", aclDirective.Relation, namespace, aclDirective.String())
+	}
+	if err != nil {
+		return err
+	}
+
 	acl.Put(aclDirective.ObjectUserString(), aclDirective.Relation)
 	return nil
 }
