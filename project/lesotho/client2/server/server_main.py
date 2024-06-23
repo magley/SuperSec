@@ -60,21 +60,21 @@ def new_doc():
 
     d = docRepo.create(body['owner_id'], body['name'])
     resp_body = {'id': d['id'], 'name': d['name']}
-    service.add_acl_directive(resp_body['id'], 'owner', body['owner_id'])
+    service.add_acl_directive(LESOTHO_URL, resp_body['id'], 'owner', body['owner_id'])
     return make_response(jsonify(resp_body), 200)
 
 
 @app.route("/doc/check", methods=["PUT"])
 def check_doc_permission():
     body = json.loads(request.json)
-    authorized = service.check_acl(body['doc_id'], body['relation'], body['user'])
+    authorized = service.check_acl(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
     return authorized
 
 
 @app.route("/doc/share", methods=["POST"])
 def share_doc():
     body = json.loads(request.json)
-    service.add_acl_directive(body['doc_id'], body['relation'], body['user'])
+    service.add_acl_directive(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
     return make_response(jsonify(body), 200)
 
 
@@ -92,7 +92,7 @@ def get_doc_by_id(id: int):
     print('Got doc:', doc)
     return make_response(jsonify(doc), 200)
 
-service.update_namespace_from_file()
+service.update_namespace_from_file(LESOTHO_URL)
 
 if __name__ == '__main__':
     app.run(host=args.ip, port=args.port)
