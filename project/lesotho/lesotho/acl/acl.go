@@ -3,9 +3,10 @@ package acl
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/syndtr/goleveldb/leveldb"
 
@@ -132,7 +133,7 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 	namespaceName := aclDirective.Namespace()
 	G, err := nss.GetNamespaceGraph(namespaceName)
 	if err != nil {
-		log.Printf("Could not build graph from namespace %s: %s\n", namespaceName, err.Error())
+		log.Error().Err(err).Send()
 		return false
 	}
 
