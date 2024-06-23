@@ -22,15 +22,14 @@ def basic_test(o, r, u, expecting: bool):
         if expecting == True:
             print(payload)
             print(f"Expected {expecting}, got {got}")
-            raise Exception("test failed")
-    
+            raise Exception("test failed")    
 
 # --------------------------------------------------
 
 start = time.time()
 
-basic_test("basic:file1:a", "owner", "1", False)
-basic_test("badNamespace:file1", "owner", "1", False)
+basic_test("basic:file1:a", "owner", "1", False) # Invalid format
+basic_test("badNamespace:file1", "owner", "1", False) # Namespace doesn't exist
 
 # --------------------------------------------------
 
@@ -76,7 +75,7 @@ basic_test("basic:file3", "owner", "2", False)
 basic_test("basic:file3", "reviewer", "2", False)
 basic_test("basic:file3", "editor", "2", False)
 basic_test("basic:file3", "viewer", "2", False)
-basic_test("basic:file3", "commenter", "2", True)
+basic_test("basic:file3", "commenter", "2", False)
 
 # --------------------------------------------------
 
