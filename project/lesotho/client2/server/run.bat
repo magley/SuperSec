@@ -1,1 +1,1 @@
-python ./server_main.py --ip localhost --port 5002
+python ./server_main.py --config ./config.ini

@@ -2,20 +2,23 @@ from flask import Flask, request, make_response, jsonify
 import json
 import service
 import argparse
+import configparser
 from datastore import user, doc
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("--lesotho", type=str, default="http://localhost:5000", help="Lesotho host, default is http://localhost:5000")
-argparser.add_argument("--ip", type=str, default="localhost", help="IP address of the server, default is localhost")
-argparser.add_argument("--port", type=str, default="5002", help="Port of the server, default is 5002")
+argparser.add_argument("--config", type=str, default="./config.ini", help="Config file path")
 args = argparser.parse_args()
 
-LESOTHO_URL = args.lesotho
+config = configparser.ConfigParser()
+config.read(args.config)
+
+LESOTHO_URL = config['MAIN']['lesotho']
+IP_ADDRESS = config['MAIN']['ip']
+PORT = config['MAIN']['port']
 
 app = Flask(__name__)
 userRepo = user.UserRepo()
 docRepo = doc.DocRepo()
-
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -95,4 +98,4 @@ def get_doc_by_id(id: int):
 service.update_namespace_from_file(LESOTHO_URL)
 
 if __name__ == '__main__':
-    app.run(host=args.ip, port=args.port)
+    app.run(host=IP_ADDRESS, port=PORT)
