@@ -1,1 +1,1 @@
-flask --app main run --port=5001
+python ./main.py --config ./config.ini
