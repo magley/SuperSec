@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"gopkg.in/ini.v1"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func initLogger() {
@@ -22,9 +23,12 @@ func initLogger() {
 		TimeFormat: time.RFC3339,
 	}
 
-	runLogFile, _ := os.OpenFile("logs/lesotho.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
+	fileWriter := &lumberjack.Logger{
+		Filename: "./logs/lesotho.log",
+		MaxSize:  1,
+	}
 
-	multiLevelWriter := zerolog.MultiLevelWriter(consoleWriter, runLogFile)
+	multiLevelWriter := zerolog.MultiLevelWriter(consoleWriter, fileWriter)
 	log.Logger = zerolog.New(multiLevelWriter).Level(zerolog.TraceLevel).With().Timestamp().Caller().Logger()
 }
 
