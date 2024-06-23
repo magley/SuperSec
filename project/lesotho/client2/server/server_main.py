@@ -14,7 +14,6 @@ logger.add(
     rotation='1 MB',
 )
 
-
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--config", type=str, default="./config.ini", help="Config file path")
 args = argparser.parse_args()
@@ -34,7 +33,7 @@ class InterceptHandler(logging.Handler):
         logger_opt.log(record.levelno, record.getMessage())
 
 app.logger.addHandler(InterceptHandler())
-logging.basicConfig(handlers=[InterceptHandler()], level=20)
+logging.basicConfig(handlers=[InterceptHandler()])
 
 userRepo = user.UserRepo()
 docRepo = doc.DocRepo()

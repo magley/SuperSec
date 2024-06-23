@@ -2,6 +2,15 @@ from flask import Flask, request, make_response
 import requests
 import argparse
 import configparser
+from loguru import logger
+import logging
+
+logger.add(
+    'logs/api.log',
+    level='DEBUG',
+    backtrace=True,
+    rotation='1 MB',
+)
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--config", type=str, default="./config.ini", help="Config file path")
@@ -17,14 +26,23 @@ PORT = config['MAIN']['port']
 
 app = Flask(__name__)
 
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        logger_opt = logger.opt(depth=6, exception=record.exc_info)
+        logger_opt.log(record.levelno, record.getMessage())
+
+app.logger.addHandler(InterceptHandler())
+logging.basicConfig(handlers=[InterceptHandler()])
+
+
 def make_response_with_cors():
     res = make_response()
     res.headers.add("Access-Control-Allow-Origin", FRONTEND_URL)
     return res
 
+
 @app.route("/acl", methods=["POST", "OPTIONS"])
 def acl_update():
-    print(request.url)
     response = make_response_with_cors()
     if request.method == "OPTIONS":
         response.headers.add("Access-Control-Allow-Headers", "content-type")
@@ -39,7 +57,6 @@ def acl_update():
 
 @app.route("/acl/check", methods=["GET"])
 def acl_query():
-    print(request.url)
     response = make_response_with_cors()
 
     check = requests.get(f'{LESOTHO_URL}/acl/check', {
@@ -57,7 +74,6 @@ def acl_query():
 
 @app.route("/namespace", methods=["POST", "OPTIONS"])
 def namespace_update():
-    print(request.url)
     response = make_response_with_cors()
     if request.method == "OPTIONS":
         response.headers.add("Access-Control-Allow-Headers", "content-type")
@@ -69,6 +85,7 @@ def namespace_update():
         response.set_data(namespace.content)
 
     return response
+
 
 if __name__ == '__main__':
     app.run(host=IP_ADDRESS, port=PORT)
