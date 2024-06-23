@@ -4,6 +4,16 @@ import service
 import argparse
 import configparser
 from datastore import user, doc
+from loguru import logger
+import logging
+
+logger.add(
+    'logs/server.log',
+    level='DEBUG',
+    backtrace=True,
+    rotation='1 MB',
+)
+
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--config", type=str, default="./config.ini", help="Config file path")
@@ -17,6 +27,15 @@ IP_ADDRESS = config['MAIN']['ip']
 PORT = config['MAIN']['port']
 
 app = Flask(__name__)
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        logger_opt = logger.opt(depth=6, exception=record.exc_info)
+        logger_opt.log(record.levelno, record.getMessage())
+
+app.logger.addHandler(InterceptHandler())
+logging.basicConfig(handlers=[InterceptHandler()], level=20)
+
 userRepo = user.UserRepo()
 docRepo = doc.DocRepo()
 
@@ -92,7 +111,6 @@ def append_to_doc():
 def get_doc_by_id(id: int):
     id = int(id)
     doc = docRepo.find_by_id(id)
-    print('Got doc:', doc)
     return make_response(jsonify(doc), 200)
 
 service.update_namespace_from_file(LESOTHO_URL)

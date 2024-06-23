@@ -1,5 +1,6 @@
 import json
 import requests
+from loguru import logger
 
 NAMESPACE_NAME = 'client2' # Must match the name field in namespace.json
 
@@ -13,9 +14,9 @@ def update_namespace_from_file(lesotho_url):
 
         namespace = requests.post(f'{lesotho_url}/namespace', json=b)
         if (namespace.status_code == 400):
-            print('\033[91m' + namespace.content.decode() + '\033[0m')
+            logger.error(f'Could not post namespace {namespace.content.decode()}')
         else:
-            print("\033[92mUploaded namespace to Lesotho\033[0m")
+            logger.info("Uploaded namespace to Lesotho")
 
 
 def add_acl_directive(lesotho_url, obj: str, relation: str, user_id: int):
@@ -27,8 +28,9 @@ def add_acl_directive(lesotho_url, obj: str, relation: str, user_id: int):
 
     acl = requests.post(f'{lesotho_url}/acl', json=b)
     if (acl.status_code == 400):
-        print('\033[91m' + acl.content.decode() + '\033[0m')
-    print(f"\033[92mUpdated {obj}:{relation}:u{user_id}\033[0m")
+        logger.error(f'Could not update ACL, {acl.content.decode()}')
+    else:
+        logger.info(f"Updated {obj}:{relation}:u{user_id}")
 
 
 def check_acl(lesotho_url, obj: str, relation: str, user_id: int):
@@ -40,7 +42,7 @@ def check_acl(lesotho_url, obj: str, relation: str, user_id: int):
 
     check = requests.get(f'{lesotho_url}/acl/check', params=b)
     if check.status_code > 200:
-        print('\033[91m' + check.content.decode() + '\033[0m')
+        logger.error(f'{check.content.decode()}')
         return {'authorized': False}
     else:
         return check.json()
