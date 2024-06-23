@@ -1,11 +1,17 @@
 from flask import Flask, request, make_response, jsonify
 import json
 import service
-
-import requests
+import argparse
 from datastore import user, doc
 
-LESOTHO_URL = "http://localhost:5000"
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--lesotho", type=str, default="http://localhost:5000", help="Lesotho host, default is http://localhost:5000")
+argparser.add_argument("--ip", type=str, default="localhost", help="IP address of the server, default is localhost")
+argparser.add_argument("--port", type=str, default="5002", help="Port of the server, default is 5002")
+args = argparser.parse_args()
+
+LESOTHO_URL = args.lesotho
+
 app = Flask(__name__)
 userRepo = user.UserRepo()
 docRepo = doc.DocRepo()
@@ -87,3 +93,6 @@ def get_doc_by_id(id: int):
     return make_response(jsonify(doc), 200)
 
 service.update_namespace_from_file()
+
+if __name__ == '__main__':
+    app.run(host=args.ip, port=args.port)
