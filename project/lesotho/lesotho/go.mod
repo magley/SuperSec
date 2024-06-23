@@ -22,4 +22,5 @@ require (
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/sys v0.19.0 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 )

@@ -2,12 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"lesotho/acl"
 	ns "lesotho/namespace"
 	"log"
 	"net/http"
 	"strings"
+
+	"gopkg.in/ini.v1"
 )
 
 var glo_acl *acl.ACL
@@ -107,20 +110,63 @@ func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	namespaceGraphCache := ns.NewNamespaceGraphCache()
+	log.Println("Loading configuration from config.ini ...")
+	cfg, err := ini.Load("config.ini")
+	if err != nil {
+		log.Printf("Fail to read 'config.ini': %v", err)
+		return
+	}
 
+	log.Println("Parsing configuration  ...")
+	cfg_ip := cfg.Section("MAIN").Key("ip").String()
+	cfg_port := cfg.Section("MAIN").Key("port").String()
+	cfg_ns_fname := ""
+	cfg_ns_name := ""
+	cfg_acl_path := cfg.Section("ACL").Key("path").String()
+	cfg_acl_fname := ""
+	cfg_use_cache := cfg.Section("MAIN").Key("use_graph_namespace_cache").MustBool(true)
+
+	k := cfg.Section("NAMESPACE").Key("namespace")
+	if k != nil {
+		cfg_ns_fname = k.String()
+	}
+	k = cfg.Section("NAMESPACE").Key("namespace_name")
+	if k != nil {
+		cfg_ns_name = k.String()
+	}
+	k = cfg.Section("ACL").Key("acl")
+	if k != nil {
+		cfg_acl_fname = k.String()
+	}
+
+	var namespaceGraphCache *ns.NamespaceGraphCache
+	if cfg_use_cache {
+		log.Println("Building namespace graph cache ...")
+		namespaceGraphCache = nil
+	} else {
+		log.Println("Namespace graph cache is ignored, skipping ...")
+	}
+
+	log.Println("Building namespace store ...")
 	glo_nss = ns.NewNamespaceStore(namespaceGraphCache)
-	glo_nss.AddFromFile("basic", "./basic.json")
 
-	glo_acl = acl.NewACL("./data/acl/")
-	glo_acl.AddFromFile("./basic.acl", glo_nss)
+	if cfg_ns_fname != "" {
+		log.Printf("Loading namespace '%s' from '%s' ...\n", cfg_ns_name, cfg_ns_fname)
+		glo_nss.AddFromFile(cfg_ns_name, cfg_ns_fname)
+	}
+
+	glo_acl = acl.NewACL(cfg_acl_path)
+	if cfg_acl_fname != "" {
+		log.Printf("Loading ACL from '%s' ...\n", cfg_acl_fname)
+		glo_acl.AddFromFile(cfg_acl_fname, glo_nss)
+	}
 	defer glo_acl.Close()
 
 	http.HandleFunc("/acl", aclUpdate)
 	http.HandleFunc("/acl/check", aclQuery)
 	http.HandleFunc("/namespace", namespaceUpdate)
 
-	log.Println("Serving http://127.0.0.1:5000")
-
-	http.ListenAndServe("127.0.0.1:5000", nil)
+	lesotho_host := fmt.Sprintf("%s:%s", cfg_ip, cfg_port)
+	log.Printf("Serving Lesotho on http://%s\n", lesotho_host)
+	http.ListenAndServe(lesotho_host, nil)
 }
