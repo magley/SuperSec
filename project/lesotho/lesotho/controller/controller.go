@@ -75,7 +75,7 @@ func AclQuery(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
+func NamespaceUpdate(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s\n", r.URL.EscapedPath())
 	if r.Method != http.MethodPost {
 		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
