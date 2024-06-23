@@ -94,7 +94,7 @@
                 {
                   "id": "e9d18dc5-cd07-423c-8255-514cbc62385f",
                   "title": "No Logging",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "type": "Repudiation",
                   "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
@@ -234,7 +234,7 @@
                 {
                   "id": "bc423b9a-77a0-4272-9a90-462021754aac",
                   "title": "No Logging",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "Medium",
                   "type": "Repudiation",
                   "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
@@ -307,15 +307,15 @@
               ]
             },
             "id": "f5be0d24-e8ec-4d9c-8999-2f04673f746c",
+            "labels": [
+              "Request (HTTP)"
+            ],
             "source": {
               "cell": "820a1214-d405-4efd-869e-d64075e5824b"
             },
             "target": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
             },
-            "labels": [
-              "Request (HTTP)"
-            ],
             "vertices": [
               {
                 "x": 186,
@@ -374,6 +374,9 @@
               ]
             },
             "id": "b6dbbde5-dcdc-4c69-a16f-88ca46bb561b",
+            "labels": [
+              "Response (HTTP)"
+            ],
             "source": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
             },
@@ -389,9 +392,6 @@
                 "x": 310,
                 "y": 90
               }
-            ],
-            "labels": [
-              "Response (HTTP)"
             ]
           },
           {
@@ -441,6 +441,9 @@
               ]
             },
             "id": "4d5b5a0d-1eef-410f-bdaa-bf1b6e360f1c",
+            "labels": [
+              "Request (HTTP)"
+            ],
             "source": {
               "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
             },
@@ -456,9 +459,6 @@
                 "x": 620,
                 "y": -80.5
               }
-            ],
-            "labels": [
-              "Request (HTTP)"
             ]
           },
           {
@@ -508,6 +508,9 @@
               ]
             },
             "id": "81c93b43-4e90-42a7-b686-adcc72e8ffd7",
+            "labels": [
+              "Response (HTTP)"
+            ],
             "source": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
             },
@@ -523,9 +526,6 @@
                 "x": 520,
                 "y": 60
               }
-            ],
-            "labels": [
-              "Response (HTTP)"
             ]
           },
           {
@@ -560,15 +560,15 @@
               "threats": []
             },
             "id": "948d6901-e8ce-4b96-b04a-7f90b97225c8",
+            "labels": [
+              "ACL Key-Value Operations"
+            ],
             "source": {
               "cell": "f60ad4f9-f674-4bc3-980a-22d6bb8c3a3c"
             },
             "target": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
-            },
-            "labels": [
-              "ACL Key-Value Operations"
-            ]
+            }
           },
           {
             "shape": "flow",
@@ -617,6 +617,9 @@
               ]
             },
             "id": "e0f7df22-d46d-45c0-bd7c-22e2416002e0",
+            "labels": [
+              "Namespace Operations\n(HTTP)"
+            ],
             "source": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
             },
@@ -632,9 +635,6 @@
                 "x": 640,
                 "y": -220
               }
-            ],
-            "labels": [
-              "Namespace Operations\n(HTTP)"
             ]
           },
           {
@@ -684,6 +684,9 @@
               ]
             },
             "id": "8703308b-7db9-4c9d-8486-e1f2548506be",
+            "labels": [
+              "Request (HTTP)"
+            ],
             "source": {
               "cell": "017180b4-396f-46a8-8869-205ef62c774d"
             },
@@ -699,9 +702,6 @@
                 "x": 70,
                 "y": 220
               }
-            ],
-            "labels": [
-              "Request (HTTP)"
             ]
           },
           {
@@ -791,6 +791,9 @@
               ]
             },
             "id": "86c2a2af-6298-4b23-bac5-889ab73dc978",
+            "labels": [
+              "Response (HTTP)"
+            ],
             "source": {
               "cell": "820a1214-d405-4efd-869e-d64075e5824b"
             },
@@ -810,9 +813,6 @@
                 "x": 330,
                 "y": 330
               }
-            ],
-            "labels": [
-              "Response (HTTP)"
             ]
           },
           {
@@ -970,6 +970,9 @@
               ]
             },
             "id": "734f74d7-f361-4cfc-a552-897bbf230ed2",
+            "labels": [
+              "Request (HTTP)"
+            ],
             "source": {
               "cell": "41a7b30c-1b6c-4310-8332-2e31544e2bee"
             },
@@ -985,9 +988,6 @@
                 "x": 580,
                 "y": 230
               }
-            ],
-            "labels": [
-              "Request (HTTP)"
             ]
           },
           {
@@ -1037,6 +1037,9 @@
               ]
             },
             "id": "dccdcedf-ac06-4093-aeb4-aba64101ccad",
+            "labels": [
+              "Response (HTTP)"
+            ],
             "source": {
               "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
             },
@@ -1052,9 +1055,6 @@
                 "x": 890,
                 "y": 350
               }
-            ],
-            "labels": [
-              "Response (HTTP)"
             ]
           },
           {
@@ -1089,15 +1089,15 @@
               "threats": []
             },
             "id": "3bd511aa-2caf-46aa-95ed-77d6fd54ec58",
+            "labels": [
+              "Disk I/O"
+            ],
             "source": {
               "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
             },
             "target": {
               "cell": "7dfed9f8-a454-4f31-bb87-761725d2dd8c"
-            },
-            "labels": [
-              "Disk I/O"
-            ]
+            }
           },
           {
             "shape": "trust-boundary-curve",
@@ -1186,7 +1186,7 @@
                 {
                   "id": "f0f2329b-c7be-4c5f-a1c9-3bbb56e3ef85",
                   "title": "No Logging",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "Medium",
                   "type": "Repudiation",
                   "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
@@ -1327,7 +1327,7 @@
                 {
                   "id": "90f77087-72db-415a-87af-6025469b216f",
                   "title": "No Logging",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "Medium",
                   "type": "Repudiation",
                   "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
