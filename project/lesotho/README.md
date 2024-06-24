@@ -10,12 +10,12 @@
 
 ## Getting started
 
-For ConsulDB, see `consul/README.md`.
-
-For the Lesotho API, see `api/README.md`.
-
-For the Lesotho browser client, see `frontend/README.md`.
-
-For the Lesotho CLI client, see `client2/README.md`.
-
-For the Lesotho namespace visualizator, see `visualizator.README.md`
+1. Run ConsulDB (see `consul/README.md`).
+2. Run Lesotho (see `lestoho/README.md`).
+3. Run demo1:
+- 3.1. Run the API (see `api/README.md`).
+- 3.2. Run the web app (see `frontend/README.md`).
+4. Run demo2:
+- 4.1. Run the server (see `client2/server/README.md`).
+- 4.2. Run the cli app (see `client2/client/README.md`).
+5. Run the local visualizator (see `visualizator/README.md`).
