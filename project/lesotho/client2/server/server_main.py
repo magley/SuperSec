@@ -118,8 +118,9 @@ def share_doc():
     body = json.loads(request.json)
 
     id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
-    if id_from_jwt != body['user']:
-        logger.info(f"Unauthorized share from {body['user']} to {body['doc_id']} {body['relation']}")
+    authorized = service.check_acl(body['doc_id'], 'owner', id_from_jwt)
+    if not authorized:
+        logger.info(f"Unauthorized share from {id_from_jwt} to {body['doc_id']} owner")
         return make_response({'error': "Unauthorized"}, 403)
 
     service.add_acl_directive(body['doc_id'], body['relation'], body['user'])
