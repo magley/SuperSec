@@ -6,6 +6,8 @@ import configparser
 from datastore import user, doc
 from loguru import logger
 import logging
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 logger.add(
     'logs/server.log',
@@ -26,6 +28,12 @@ IP_ADDRESS = config['MAIN']['ip']
 PORT = config['MAIN']['port']
 
 app = Flask(__name__)
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["2000 per day", "120 per hour"],
+)
 
 class InterceptHandler(logging.Handler):
     def emit(self, record):
