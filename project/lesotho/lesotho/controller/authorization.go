@@ -25,6 +25,12 @@ func AclUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !global.ApiKeyRepo.CheckAPIKey(r) {
+		log.Error().Err(fmt.Errorf("unauthorized request on %s", r.URL.EscapedPath())).Send()
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	var aclDirective acl.ACLDirective
 	err := decoder.Decode(&aclDirective)
@@ -58,6 +64,12 @@ func AclQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !global.ApiKeyRepo.CheckAPIKey(r) {
+		log.Error().Err(fmt.Errorf("unauthorized request on %s", r.URL.EscapedPath())).Send()
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	aclDirective, err := acl.NewACLDirective(
 		r.URL.Query().Get("object"),
 		r.URL.Query().Get("relation"),
@@ -82,6 +94,12 @@ func NamespaceUpdate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		log.Error().Err(fmt.Errorf("method %s not allowed on %s", r.Method, r.URL.EscapedPath())).Send()
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if !global.ApiKeyRepo.CheckAPIKey(r) {
+		log.Error().Err(fmt.Errorf("unauthorized request on %s", r.URL.EscapedPath())).Send()
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"lesotho/acl"
+	"lesotho/apikey"
 	"lesotho/controller"
 	"lesotho/global"
 	ns "lesotho/namespace"
@@ -47,9 +48,15 @@ func main() {
 	cfg_port := cfg.Section("MAIN").Key("port").String()
 	cfg_ns_fname := ""
 	cfg_ns_name := ""
+	cfg_api_key_repo_path := cfg.Section("MAIN").Key("api_key_repo_path").String()
+
 	cfg_acl_path := cfg.Section("ACL").Key("path").String()
 	cfg_acl_fname := ""
 	cfg_use_cache := cfg.Section("MAIN").Key("use_graph_namespace_cache").MustBool(true)
+
+	log.Info().Msgf("Loading API key repository ...")
+	global.ApiKeyRepo = apikey.OpenAPIKeyRepository(cfg_api_key_repo_path)
+	defer global.ApiKeyRepo.Close()
 
 	k := cfg.Section("NAMESPACE").Key("namespace")
 	if k != nil {
@@ -90,6 +97,7 @@ func main() {
 	http.HandleFunc("/acl", controller.AclUpdate)
 	http.HandleFunc("/acl/check", controller.AclQuery)
 	http.HandleFunc("/namespace", controller.NamespaceUpdate)
+	http.HandleFunc("/apikey", controller.RequestApiKey)
 
 	lesotho_host := fmt.Sprintf("%s:%s", cfg_ip, cfg_port)
 	log.Info().Msgf("Serving Lesotho on http://%s", lesotho_host)
