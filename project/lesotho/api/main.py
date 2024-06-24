@@ -1,12 +1,13 @@
 import sys
 from flask import Flask, request, make_response
-import requests
+import json
 import argparse
 import configparser
 from loguru import logger
 import logging
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from pylesotho.client import LesothoClient
 
 logger.add(
     'logs/api.log',
@@ -35,6 +36,8 @@ LESOTHO_URL = config['MAIN']['lesotho']
 FRONTEND_URL = config['MAIN']['trusted_origin']
 IP_ADDRESS = config['MAIN']['ip']
 PORT = config['MAIN']['port']
+
+lesotho = LesothoClient(LESOTHO_URL, LESOTHO_API_CLIENT_NAME, LESOTHO_API_KEY)
 
 app = Flask(__name__)
 
@@ -66,10 +69,13 @@ def acl_update():
         response.headers.add("Access-Control-Allow-Headers", "content-type")
         return response
 
-    headers = {
-        "Authorization": f"{LESOTHO_API_CLIENT_NAME} {LESOTHO_API_KEY}"
-    }
-    acl = requests.post(f'{LESOTHO_URL}/acl', json=request.get_json(), headers=headers)
+    body = request.get_json()
+    namespace = body['object'].split(':')[0]
+    obj = body['object'].split(':')[1]
+    relation = body['relation']
+    user = body['user']
+
+    acl = lesotho.acl_update(namespace, obj, relation, user)
     if (acl.status_code == 400):
         response.status_code = 400
         response.set_data(acl.content)
@@ -80,19 +86,14 @@ def acl_update():
 def acl_query():
     response = make_response_with_cors()
 
-    headers = {
-        "Authorization": f"{LESOTHO_API_CLIENT_NAME} {LESOTHO_API_KEY}"
-    }
-    check = requests.get(f'{LESOTHO_URL}/acl/check', {
-        'object': request.args.get("object"),
-        'relation': request.args.get("relation"),
-        'user': request.args.get("user"),
-    }, headers=headers)
-    if (check.status_code == 400):
-        response.status_code = 400
-    else:
-        response.headers.add('Content-Type', 'application/json')
-    response.set_data(check.content)
+    namespace = request.args.get('object').split(':')[0]
+    obj = request.args.get('object').split(':')[1]
+    relation = request.args.get('relation')
+    user = request.args.get('user')
+
+    is_authorized = lesotho.acl_query(namespace, obj, relation, user)
+    response.headers.add('Content-Type', 'application/json')
+    response.set_data(json.dumps({'authorized': is_authorized}))
     return response
 
 
@@ -103,10 +104,7 @@ def namespace_update():
         response.headers.add("Access-Control-Allow-Headers", "content-type")
         return response
 
-    headers = {
-        "Authorization": f"{LESOTHO_API_CLIENT_NAME} {LESOTHO_API_KEY}"
-    }
-    namespace = requests.post(f'{LESOTHO_URL}/namespace', json=request.get_json(), headers=headers)
+    namespace = lesotho.namespace_update(request.get_json())
     if (namespace.status_code == 400):
         response.status_code = 400
         response.set_data(namespace.content)
