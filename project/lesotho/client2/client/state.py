@@ -10,9 +10,7 @@ STATE = {
 
 def set_session_user_jwt(jwt_encoded: str):
     body = jwt_encoded.split('.')[1]
-    print(body)
     body = json.loads(base64.b64decode(body + '==').decode())
-    print(body)
 
     id = body['id']
     email = body['sub']
