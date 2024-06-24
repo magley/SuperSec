@@ -2,6 +2,21 @@ import requests
 import json
 import time
 
+API_KEY_CLIENT_NAME = "test_python_script"
+API_KEY = ""
+
+def request_api_key():
+    global API_KEY
+
+    url = "http://127.0.0.1:5000"
+    payload = {
+        "client": API_KEY_CLIENT_NAME
+    }
+    resp = requests.post(f"{url}/apikey", json=payload)
+    body = json.loads(resp.content.decode())
+    API_KEY = body['key']
+
+
 def basic_test(o, r, u, expecting: bool):
     url = "http://127.0.0.1:5000"
     payload = {
@@ -9,7 +24,10 @@ def basic_test(o, r, u, expecting: bool):
         "relation": r,
         "user": u,
     }
-    resp = requests.get(f"{url}/acl/check", payload)
+    headers = {
+        "Authorization": f"{API_KEY_CLIENT_NAME} {API_KEY}"
+    }
+    resp = requests.get(f"{url}/acl/check", payload, headers=headers)
 
     try:
         got = json.loads(resp.content.decode())["authorized"]
@@ -25,6 +43,13 @@ def basic_test(o, r, u, expecting: bool):
             raise Exception("test failed")    
 
 # --------------------------------------------------
+
+print("NOTE: A new API key has been issued")
+start = time.time()
+request_api_key()
+end = time.time()
+print(f"Got API key in {end - start}s")
+
 
 start = time.time()
 
