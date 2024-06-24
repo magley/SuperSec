@@ -1,14 +1,13 @@
 from flask import Flask, request, make_response, jsonify
 import json
 import service
-import argparse
-import configparser
 from datastore import user, doc
 from loguru import logger
 import logging
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import jwtutil
+import config
 
 logger.add(
     'logs/server.log',
@@ -16,17 +15,6 @@ logger.add(
     backtrace=True,
     rotation='1 MB',
 )
-
-argparser = argparse.ArgumentParser()
-argparser.add_argument("--config", type=str, default="./config.ini", help="Config file path")
-args = argparser.parse_args()
-
-config = configparser.ConfigParser()
-config.read(args.config)
-
-LESOTHO_URL = config['MAIN']['lesotho']
-IP_ADDRESS = config['MAIN']['ip']
-PORT = config['MAIN']['port']
 
 app = Flask(__name__)
 
@@ -101,7 +89,7 @@ def new_doc():
 
     d = docRepo.create(body['owner_id'], body['name'])
     resp_body = {'id': d['id'], 'name': d['name']}
-    service.add_acl_directive(LESOTHO_URL, resp_body['id'], 'owner', body['owner_id'])
+    service.add_acl_directive(resp_body['id'], 'owner', body['owner_id'])
     return make_response(jsonify(resp_body), 200)
 
 
@@ -115,7 +103,7 @@ def check_doc_permission():
         logger.info(f"Unauthorized access from {body['user']} to {body['doc_id']} {body['relation']}")
         return {'authorized': False}
 
-    authorized = service.check_acl(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
+    authorized = service.check_acl(body['doc_id'], body['relation'], body['user'])
     if not authorized:
         logger.info(f"Unauthorized access from {body['user']} to {body['doc_id']} {body['relation']}")
         return {'authorized': False}
@@ -134,7 +122,7 @@ def share_doc():
         logger.info(f"Unauthorized share from {body['user']} to {body['doc_id']} {body['relation']}")
         return make_response({'error': "Unauthorized"}, 403)
 
-    service.add_acl_directive(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
+    service.add_acl_directive(body['doc_id'], body['relation'], body['user'])
     logger.info(f"Document {body['doc_id']} shared with {body['user']} as {body['relation']}")
     return make_response(jsonify(body), 200)
 
@@ -145,7 +133,7 @@ def append_to_doc():
     body = json.loads(request.json)
 
     id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
-    authorized = service.check_acl(LESOTHO_URL, body['doc_id'], 'editor', id_from_jwt)
+    authorized = service.check_acl(body['doc_id'], 'editor', id_from_jwt)
     if not authorized:
         logger.info(f"Unauthorized edit from {id_from_jwt} to {body['doc_id']}")
         return make_response({'error': "Unauthorized"}, 403)
@@ -162,7 +150,7 @@ def get_doc_by_id(id: int):
     id = int(id)
 
     id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
-    authorized = service.check_acl(LESOTHO_URL, id, 'editor', id_from_jwt)
+    authorized = service.check_acl(id, 'editor', id_from_jwt)
     if not authorized:
         logger.info(f"Unauthorized read from {id_from_jwt} to {id}")
         return make_response({'error': "Unauthorized"}, 403)
@@ -172,7 +160,9 @@ def get_doc_by_id(id: int):
     doc = docRepo.find_by_id(id)
     return make_response(jsonify(doc), 200)
 
-service.update_namespace_from_file(LESOTHO_URL)
 
 if __name__ == '__main__':
-    app.run(host=IP_ADDRESS, port=PORT)
+    config.load_config()
+    service.init_lesotho_client()
+    service.update_namespace_from_file()
+    app.run(host=config.GLO['ip_address'], port=config.GLO['port'])
