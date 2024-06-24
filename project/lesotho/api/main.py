@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, request, make_response
 import requests
 import argparse
@@ -6,6 +7,15 @@ from loguru import logger
 import logging
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+LESOTHO_API_CLIENT_NAME = "demo1_api"
+LESOTHO_API_KEY = ""
+try:
+    with open("apikey.secret") as f:
+        LESOTHO_API_KEY = f.read()   
+except FileNotFoundError:
+    logging.error("File 'apikey.secret' not found, please create the file and add a lesotho API key for client 'demo1_api' inside the file")
+    sys.exit(1)
 
 logger.add(
     'logs/api.log',
@@ -56,7 +66,10 @@ def acl_update():
         response.headers.add("Access-Control-Allow-Headers", "content-type")
         return response
 
-    acl = requests.post(f'{LESOTHO_URL}/acl', json=request.get_json())
+    headers = {
+        "Authorization": f"{LESOTHO_API_CLIENT_NAME} {LESOTHO_API_KEY}"
+    }
+    acl = requests.post(f'{LESOTHO_URL}/acl', json=request.get_json(), headers=headers)
     if (acl.status_code == 400):
         response.status_code = 400
         response.set_data(acl.content)
@@ -67,11 +80,14 @@ def acl_update():
 def acl_query():
     response = make_response_with_cors()
 
+    headers = {
+        "Authorization": f"{LESOTHO_API_CLIENT_NAME} {LESOTHO_API_KEY}"
+    }
     check = requests.get(f'{LESOTHO_URL}/acl/check', {
         'object': request.args.get("object"),
         'relation': request.args.get("relation"),
         'user': request.args.get("user"),
-    })
+    }, headers=headers)
     if (check.status_code == 400):
         response.status_code = 400
     else:
@@ -87,7 +103,10 @@ def namespace_update():
         response.headers.add("Access-Control-Allow-Headers", "content-type")
         return response
 
-    namespace = requests.post(f'{LESOTHO_URL}/namespace', json=request.get_json())
+    headers = {
+        "Authorization": f"{LESOTHO_API_CLIENT_NAME} {LESOTHO_API_KEY}"
+    }
+    namespace = requests.post(f'{LESOTHO_URL}/namespace', json=request.get_json(), headers=headers)
     if (namespace.status_code == 400):
         response.status_code = 400
         response.set_data(namespace.content)
