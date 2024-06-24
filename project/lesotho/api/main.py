@@ -8,21 +8,21 @@ import logging
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-LESOTHO_API_CLIENT_NAME = "demo1_api"
-LESOTHO_API_KEY = ""
-try:
-    with open("apikey.secret") as f:
-        LESOTHO_API_KEY = f.read()   
-except FileNotFoundError:
-    logging.error("File 'apikey.secret' not found, please create the file and add a lesotho API key for client 'demo1_api' inside the file")
-    sys.exit(1)
-
 logger.add(
     'logs/api.log',
     level='DEBUG',
     backtrace=True,
     rotation='1 MB',
 )
+
+LESOTHO_API_CLIENT_NAME = "demo1_api"
+LESOTHO_API_KEY = ""
+try:
+    with open("apikey.secret") as f:
+        LESOTHO_API_KEY = f.read()   
+except FileNotFoundError:
+    logger.error("File 'apikey.secret' not found, please create the file and add a lesotho API key for client 'demo1_api' inside the file")
+    sys.exit(1)
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--config", type=str, default="./config.ini", help="Config file path")
