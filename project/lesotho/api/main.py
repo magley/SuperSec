@@ -16,7 +16,7 @@ logger.add(
     rotation='1 MB',
 )
 
-LESOTHO_API_CLIENT_NAME = "demo1_api"
+LESOTHO_API_CLIENT_NAME = ""
 LESOTHO_API_KEY = ""
 try:
     with open("apikey.secret") as f:
@@ -32,6 +32,7 @@ args = argparser.parse_args()
 config = configparser.ConfigParser()
 config.read(args.config)
 
+LESOTHO_API_CLIENT_NAME = config['MAIN']['api_key_client_name']
 LESOTHO_URL = config['MAIN']['lesotho']
 FRONTEND_URL = config['MAIN']['trusted_origin']
 IP_ADDRESS = config['MAIN']['ip']

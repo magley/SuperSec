@@ -7,7 +7,7 @@ GLO = {
     "lesotho_url": "",
     "ip_address": "",
     "port": 0,
-    "lesotho_api_client_name": "demo2_api",
+    "lesotho_api_client_name": "",
     "lesotho_api_key": ""
 }
 
@@ -21,10 +21,12 @@ def load_config():
 
     global GLO
 
+    
+
     GLO['lesotho_url'] = config['MAIN']['lesotho']
     GLO['ip_address'] = config['MAIN']['ip']
     GLO['port'] = config['MAIN']['port']
-    GLO['lesotho_api_client_name'] = 'demo2_api'
+    GLO['lesotho_api_client_name'] = config['MAIN']['api_key_client_name']
 
     try:
         with open("apikey.secret") as f:
