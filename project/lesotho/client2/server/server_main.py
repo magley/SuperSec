@@ -8,6 +8,7 @@ from loguru import logger
 import logging
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import jwtutil
 
 logger.add(
     'logs/server.log',
@@ -55,7 +56,7 @@ def login():
         logger.info(f"Failed login attempt for {body['email']}")
         return make_response({'error': "User not found"}, 404)
     logger.info(f"Successful login attempt for {body['email']}")
-    return make_response(jsonify({'id': u['id'], 'email': u['email']}), 200)
+    return make_response(jsonify({'jwt': jwtutil.jwt_encode(u['email'], u['id'])}), 200)
 
 
 @app.route("/register", methods=["POST"])
@@ -76,6 +77,8 @@ def register():
 
 @app.route("/user/all", methods=["GET"])
 def get_all_users():
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     r = userRepo.get_all()
     r = [{'id': doc['id'], 'email': doc['email']} for doc in r]
     return make_response(jsonify(r), 200)
@@ -83,6 +86,8 @@ def get_all_users():
 
 @app.route("/doc/all", methods=["GET"])
 def get_all_docs():
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     r = docRepo.get_all()
     r = [{'id': doc['id'], 'name': doc['name']} for doc in r]
     return make_response(jsonify(r), 200)
@@ -90,6 +95,8 @@ def get_all_docs():
 
 @app.route("/doc/new", methods=["POST"])
 def new_doc():
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     body = json.loads(request.json)
 
     d = docRepo.create(body['owner_id'], body['name'])
@@ -100,6 +107,8 @@ def new_doc():
 
 @app.route("/doc/check", methods=["PUT"])
 def check_doc_permission():
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     body = json.loads(request.json)
     authorized = service.check_acl(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
     if not authorized:
@@ -111,6 +120,8 @@ def check_doc_permission():
 
 @app.route("/doc/share", methods=["POST"])
 def share_doc():
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     body = json.loads(request.json)
     service.add_acl_directive(LESOTHO_URL, body['doc_id'], body['relation'], body['user'])
     logger.info(f"Document {body['doc_id']} shared with {body['user']} as {body['relation']}")
@@ -119,6 +130,8 @@ def share_doc():
 
 @app.route("/doc/append", methods=["PUT"])
 def append_to_doc():
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     body = json.loads(request.json)
     docRepo.append_text(body['doc_id'], body['text'])
     return make_response(jsonify({}), 200)
@@ -126,6 +139,8 @@ def append_to_doc():
 
 @app.route("/doc/<id>", methods=["GET"])
 def get_doc_by_id(id: int):
+    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+
     id = int(id)
     doc = docRepo.find_by_id(id)
     return make_response(jsonify(doc), 200)

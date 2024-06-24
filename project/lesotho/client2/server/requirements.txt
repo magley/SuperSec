@@ -2,3 +2,4 @@ bcrypt
 flask
 loguru 
 flask_limiter 
+pyjwt 
