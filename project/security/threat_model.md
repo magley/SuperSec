@@ -109,13 +109,15 @@ API
 
 **Ocena** = `Likelihood * Impact`
 
+(подебљане претње су митиговане)
+
 | #  | Категорија | Опис | Компонента | Likelihood | Impact | Ocena |
 |----|------------|------|------------|------------|--------|-------|
 | 01 | I | No HTTPs | Све | 1,0 | 5 | 5,0 |
 | 02 | D | No rate limiting | Lesotho | 0,25 | 5 | 1,25 |
-| 03 | S, E | Invalid token auth | API2 | 0,8 | 3 | 2,4 |
-| 04 | R | No logging | * | 0,75 | 2 | 1,5 |
-| 05 | I, D | No API keys | Lesotho | 1,0 | 4 | 4,0 | 
+| **03** | S, E | **Invalid token auth** | API2 | 0,8 | 3 | 2,4 |
+| **04** | R | **No logging** | * | 0,75 | 2 | 1,5 |
+| **05** | I, D | **No API keys** | Lesotho | 1,0 | 4 | 4,0 | 
 | 06 | T, I | No sandboxing | Lesotho, API, API2, LevelDB, Consul | 0.275 | 3 | 0,825 |
 | 07 | T | ConsulDB tampering | Consul | 0,13375 | 4 | 0,535
 | 08 | D | No Captcha | Web App, Cli App(?) | 0,7 | 2 | 1,4 |

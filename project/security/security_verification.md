@@ -12,7 +12,7 @@
 | Број | Опис | CWE | Испуњеност |
 | ---- | ---- | --- | ---------- |
 | 1.2.1| Verify the use of unique or special low-privilege operating system accounts for all application components, services, and servers.| 250 | **Да**, ниједан сервис не захтева администраторске привилегије. |
-| 1.2.2| Verify that communications between application components, including APIs, middleware and data layers, are authenticated. Components should have the least necessary privileges needed. | 306 | **Не**, интерне компоненте су подешене са подразумеваним привилегијама. Свако може приступити Lesotho севрису - **није имплементиран механизам API кључева**. |
+| 1.2.2| Verify that communications between application components, including APIs, middleware and data layers, are authenticated. Components should have the least necessary privileges needed. | 306 | **Парцијално**, API кључ је имплементиран али интерне компоненте су подешене са подразумеваним привилегијама. |
 | 1.2.3| Verify that the application uses a single vetted authentication mechanism that is known to be secure, can be extended to include strong authentication, and has sufficient logging and monitoring to detect account abuse or breaches. | 306 | **Парцијално**, logging јесте, а monitoring није имплементиран. |
 | 1.2.4| Verify that all authentication pathways and identity management APIs implement consistent authentication security control strength, such that there are no weaker alternatives per the risk of the application.| 306 | **Да**, имплементиран је само један аутентификациони (_demo2_) и само један ауторизациони (_централизовани Lesotho auth_) систем у склопу пројекта.
 ---

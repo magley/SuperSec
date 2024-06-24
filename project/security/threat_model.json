@@ -68,7 +68,7 @@
                 {
                   "id": "2b8ae742-78a3-4a6f-8a39-3b1ebdafbb19",
                   "title": "No API keys",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "Medium",
                   "type": "Information disclosure",
                   "description": "Lesotho нуди свим сервисима да га користе директно. Помоћу API кључева би Lesotho постао deny-by-default сервис што је препоручено за компоненте са високим мрежним саобраћајем. У супротном систем постаје подложан како DoS нападима, тако злоупотребом привилегија.",
@@ -1314,7 +1314,7 @@
                 {
                   "id": "5ca71c93-1de3-424c-93cf-e1348807a90c",
                   "title": "Invalid Token Authorization",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "type": "Spoofing",
                   "description": "Сервер при успешној аутентификацији враћа JSON који има просту шему. Корисник лако може изменити тај JSON  и представити се као други корисник.",
