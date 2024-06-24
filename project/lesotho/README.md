@@ -12,10 +12,11 @@
 
 1. Run ConsulDB (see `consul/README.md`).
 2. Run Lesotho (see `lestoho/README.md`).
-3. Run demo1:
+3. Install `pylesotho` python library (see `pylesotho/README.md`).
+4. Run demo1:
 - 3.1. Run the API (see `api/README.md`).
 - 3.2. Run the web app (see `frontend/README.md`).
-4. Run demo2:
+5. Run demo2:
 - 4.1. Run the server (see `client2/server/README.md`).
 - 4.2. Run the cli app (see `client2/client/README.md`).
-5. Run the local visualizator (see `visualizator/README.md`).
+6. Run the local visualizator (see `visualizator/README.md`).
