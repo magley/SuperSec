@@ -154,7 +154,7 @@ func (nss *NamespaceStore) buildGraph(namespaceName string) (*NamespaceGraph, er
 	return graph, nil
 }
 
-func (nss *NamespaceStore) RelationHasThis(namespaceName string, role string) (bool, error) {
+func (nss *NamespaceStore) IsSettable(namespaceName string, role string) (bool, error) {
 	relations, err := nss.GetRelations(namespaceName)
 	// Namespace doesn't exist.
 	if err != nil {

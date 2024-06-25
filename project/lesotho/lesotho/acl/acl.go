@@ -83,9 +83,9 @@ func (acl *ACL) Add(aclDirective ACLDirective, nss *ns.NamespaceStore) error {
 		return err
 	}
 
-	canBeSetDirectly, err := nss.RelationHasThis(namespace, aclDirective.Relation)
-	if !canBeSetDirectly {
-		return fmt.Errorf("relation '%s' in namespace '%s' cannot be set directly (tried adding ACL directive '%s')", aclDirective.Relation, namespace, aclDirective.String())
+	canBeSet, err := nss.IsSettable(namespace, aclDirective.Relation)
+	if !canBeSet {
+		return fmt.Errorf("relation '%s' cannot be set in namespace '%s' (tried adding ACL directive '%s')", aclDirective.Relation, namespace, aclDirective.String())
 	}
 	if err != nil {
 		return err
