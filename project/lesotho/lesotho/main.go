@@ -74,7 +74,7 @@ func main() {
 	var namespaceGraphCache *ns.NamespaceGraphCache
 	if cfg_use_cache {
 		log.Info().Msgf("Building namespace graph cache ...")
-		namespaceGraphCache = nil
+		namespaceGraphCache = ns.NewNamespaceGraphCache()
 	} else {
 		log.Info().Msgf("Namespace graph cache is ignored, skipping ...")
 	}
