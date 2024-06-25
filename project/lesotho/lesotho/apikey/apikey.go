@@ -33,8 +33,8 @@ func (apiKeyRepo *APIKeyRepository) Close() {
 	}
 }
 
-// IssueAPIKey assigns an new API key for the provided client name. Old API will
-// get overwritten. Client name must not be an empty string.
+// IssueAPIKey assigns an new API key for the provided client name. If an API
+// key exists, this function will fail. Client name must not be an empty string.
 func (apiKeyRepo *APIKeyRepository) IssueAPIKey(client string) (string, error) {
 	id := uuid.New()
 	apiKey := id.String()
@@ -44,6 +44,14 @@ func (apiKeyRepo *APIKeyRepository) IssueAPIKey(client string) (string, error) {
 	}
 
 	hashedAPIKey, err := bcrypt.GenerateFromPassword([]byte(apiKey), 0)
+	if err != nil {
+		return "", err
+	}
+
+	alreadyHasApiKey, err := apiKeyRepo.db.Has([]byte(client), nil)
+	if alreadyHasApiKey {
+		return "", fmt.Errorf("client %s alread has an API key", client)
+	}
 	if err != nil {
 		return "", err
 	}

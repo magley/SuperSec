@@ -2,8 +2,15 @@ import requests
 import json
 import time
 
-API_KEY_CLIENT_NAME = "test_python_script"
+API_KEY_CLIENT_NAME = "lesotho_test_script"
 API_KEY = ""
+
+def load_api_key():
+    global API_KEY
+
+    with open("apikey.secret") as f:
+        API_KEY = f.read()
+
 
 def request_api_key():
     global API_KEY
@@ -15,6 +22,7 @@ def request_api_key():
     resp = requests.post(f"{url}/apikey", json=payload)
     body = json.loads(resp.content.decode())
     API_KEY = body['key']
+    print(API_KEY)
 
 
 def basic_test(o, r, u, expecting: bool):
@@ -44,9 +52,9 @@ def basic_test(o, r, u, expecting: bool):
 
 # --------------------------------------------------
 
-print("NOTE: A new API key has been issued")
 start = time.time()
-request_api_key()
+#request_api_key()
+load_api_key()
 end = time.time()
 print(f"Got API key in {end - start}s")
 
