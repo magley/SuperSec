@@ -7,4 +7,4 @@ basic:file2#owner@2
 basic:file2#viewer@4
 
 basic:file3#reviewer@1
-basic:file3#commenter@2
+# basic:file3#commenter@2

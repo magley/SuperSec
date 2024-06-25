@@ -12,8 +12,8 @@
 | Број | Опис | CWE | Испуњеност |
 | ---- | ---- | --- | ---------- |
 | 1.2.1| Verify the use of unique or special low-privilege operating system accounts for all application components, services, and servers.| 250 | **Да**, ниједан сервис не захтева администраторске привилегије. |
-| 1.2.2| Verify that communications between application components, including APIs, middleware and data layers, are authenticated. Components should have the least necessary privileges needed. | 306 | **Не**, интерне компоненте су подешене са подразумеваним привилегијама. Свако може приступити Lesotho севрису - **није имплементиран механизам API кључева**. |
-| 1.2.3| Verify that the application uses a single vetted authentication mechanism that is known to be secure, can be extended to include strong authentication, and has sufficient logging and monitoring to detect account abuse or breaches. | 306 | **Не**, logging и monitoring нису имплементирани. |
+| 1.2.2| Verify that communications between application components, including APIs, middleware and data layers, are authenticated. Components should have the least necessary privileges needed. | 306 | **Парцијално**, API кључ је имплементиран али интерне компоненте су подешене са подразумеваним привилегијама. |
+| 1.2.3| Verify that the application uses a single vetted authentication mechanism that is known to be secure, can be extended to include strong authentication, and has sufficient logging and monitoring to detect account abuse or breaches. | 306 | **Парцијално**, logging јесте, а monitoring није имплементиран. |
 | 1.2.4| Verify that all authentication pathways and identity management APIs implement consistent authentication security control strength, such that there are no weaker alternatives per the risk of the application.| 306 | **Да**, имплементиран је само један аутентификациони (_demo2_) и само један ауторизациони (_централизовани Lesotho auth_) систем у склопу пројекта.
 ---
 
@@ -53,8 +53,8 @@
 
 | Број  | Опис | CWE | Испуњеност |
 | ----- | ---- | --- | ---------- |
-| 1.7.1 | Verify that a common logging format and approach is used across the system. | 1009 | **Не**, логовање није имплементирано. |
-| 1.7.2 | Verify that logs are securely transmitted to a preferably remote system for analysis, detection, alerting, and escalation. | | **Не**, логовање није имплементирано. |
+| 1.7.1 | Verify that a common logging format and approach is used across the system. | 1009 | **Парцијално**, Lesotho има један формат, а Flask сервери други. |
+| 1.7.2 | Verify that logs are securely transmitted to a preferably remote system for analysis, detection, alerting, and escalation. | | **Не**, све је на једном рачунару. |
 
 ### V1.8 Data Protection and Privacy Architecture
 
@@ -317,15 +317,15 @@
 | ----- | ---- | --- | ---------- |
 | 7.1.1 | Verify that the application does not log credentials or payment details.  Session tokens should only be stored in logs in an irreversible, hashed form. | 532 | **Да** |
 | 7.1.2 | Verify that the application does not log other sensitive data as defined under  local privacy laws or relevant security policy. | 532 | **Да** |
-| 7.1.3 | Verify that the application logs security relevant events including successful  and failed authentication events, access control failures, deserialization  failures and input validation failures. | 778 | **Не** |
-| 7.1.4 | Verify that each log event includes necessary information that would allow for  a detailed investigation of the timeline when an event happens. | 778 | **Не** |
+| 7.1.3 | Verify that the application logs security relevant events including successful  and failed authentication events, access control failures, deserialization  failures and input validation failures. | 778 | **Да** |
+| 7.1.4 | Verify that each log event includes necessary information that would allow for  a detailed investigation of the timeline when an event happens. | 778 | **Да** |
 
 ### V7.2 Log Processing
 
 | Број  | Опис | CWE | Испуњеност |
 | ----- | ---- | --- | ---------- |
-| 7.2.1 | Verify that all authentication decisions are logged, without storing sensitive  session tokens or passwords. This should include requests with relevant  metadata needed for security investigations. | 778 | **Не** |
-| 7.2.2 | Verify that all access control decisions can be logged and all failed decisions  are logged. This should include requests with relevant metadata needed for  security investigations. | 285 | **Не** |
+| 7.2.1 | Verify that all authentication decisions are logged, without storing sensitive  session tokens or passwords. This should include requests with relevant  metadata needed for security investigations. | 778 | **Да** |
+| 7.2.2 | Verify that all access control decisions can be logged and all failed decisions  are logged. This should include requests with relevant metadata needed for  security investigations. | 285 | **Да** |
 
 ### V7.3 Log Protection
 
@@ -373,7 +373,7 @@
 | 8.3.2 | Verify that users have a method to remove or export their data on demand.  | 212 | **Не** |
 | 8.3.3 | Verify that users are provided clear language regarding collection and use of  supplied personal information and that users have provided opt-in consent  for the use of that data before it is used in any way. | 285 | **Не** |
 | 8.3.4 | Verify that all sensitive data created and processed by the application has  been identified, and ensure that a policy is in place on how to deal with  sensitive data. | 200 | **Не** |
-| 8.3.5 | Verify accessing sensitive data is audited (without logging the sensitive data  itself), if the data is collected under relevant data protection directives or  where logging of access is required. | 532 | **N/A** |
+| 8.3.5 | Verify accessing sensitive data is audited (without logging the sensitive data  itself), if the data is collected under relevant data protection directives or  where logging of access is required. | 532 | **Да** |
 | 8.3.6 | Verify that sensitive information contained in memory is overwritten as soon  as it is no longer required to mitigate memory dumping attacks, using zeroes  or random data. | 226 | **N/A** |
 | 8.3.7 | Verify that sensitive or private information that is required to be encrypted, is  encrypted using approved algorithms that provide both confidentiality and  integrity.  | 327 | **Да** |
 | 8.3.8 | Verify that sensitive personal information is subject to data retention  classification, such that old or out of date data is deleted automatically, on a  schedule, or as the situation requires. | 285 | **N/A** |

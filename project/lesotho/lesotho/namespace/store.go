@@ -153,3 +153,32 @@ func (nss *NamespaceStore) buildGraph(namespaceName string) (*NamespaceGraph, er
 	graph.RebuildFromNamespaceRelations(relations)
 	return graph, nil
 }
+
+func (nss *NamespaceStore) IsSettable(namespaceName string, role string) (bool, error) {
+	relations, err := nss.GetRelations(namespaceName)
+	// Namespace doesn't exist.
+	if err != nil {
+		return false, err
+	}
+
+	// Role doesn't exist.
+	relation, ok := relations[role]
+	if !ok {
+		return false, nil
+	}
+
+	// Role doesn't have 'union' -> primitive role -> implied true.
+	if relation.Union == nil {
+		return true, nil
+	}
+
+	// Search for 'this' in 'union'.
+	for _, unionElement := range *relation.Union {
+		if unionElement.This != nil {
+			return true, nil
+		}
+	}
+
+	// 'this' doesn't exist in 'union'.
+	return false, nil
+}

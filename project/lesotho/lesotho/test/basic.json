@@ -15,6 +15,11 @@
                 },
                 {
                     "computed_userset": {
+                        "relation": "commenter"
+                    }
+                },
+                {
+                    "computed_userset": {
                         "relation": "reviewer"
                     }
                 }
@@ -34,9 +39,6 @@
         },
         "commenter": {
             "union": [
-                {
-                    "this": {}
-                },
                 {
                     "computed_userset": {
                         "relation": "reviewer"

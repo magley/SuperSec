@@ -18,37 +18,37 @@ func (d *ACLDirective) Validate() error {
 	objectParts := strings.Split(d.Object, ":")
 
 	if len(objectParts) != 2 {
-		return fmt.Errorf("field object (%s) in ACLDirective has invalid format", d.Object)
+		return fmt.Errorf("field 'object' (%s) in ACLDirective (%s) has invalid format", d.Object, d.String())
 	}
 
 	justNamespace := objectParts[0]
 	justObject := objectParts[1]
 
 	if justNamespace == "" {
-		return fmt.Errorf("field object in ACLDirective has empty namespace")
+		return fmt.Errorf("field object in ACLDirective (%s) has empty namespace", d.String())
 	}
 	if strings.ContainsAny(justNamespace, ":#@") {
-		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
+		return fmt.Errorf("field object (%s) in ACLDirective (%s) contains invalid character", d.Object, d.String())
 	}
 	if justObject == "" {
-		return fmt.Errorf("field object in ACLDirective is an empty string")
+		return fmt.Errorf("field object in ACLDirective (%s) is an empty string", d.String())
 	}
 	if strings.ContainsAny(justObject, ":#@") {
-		return fmt.Errorf("field object (%s) in ACLDirective contains invalid character", d.Object)
+		return fmt.Errorf("field object (%s) in ACLDirective (%s) contains invalid character", d.Object, d.String())
 	}
 
 	if d.Relation == "" {
-		return fmt.Errorf("field relation in ACLDirective is an empty string")
+		return fmt.Errorf("field relation in ACLDirective (%s) is an empty string", d.String())
 	}
 	if strings.ContainsAny(d.Relation, ":#@") {
-		return fmt.Errorf("field relation (%s) in ACLDirective contains invalid character", d.Relation)
+		return fmt.Errorf("field relation (%s) in ACLDirective (%s) contains invalid character", d.Relation, d.String())
 	}
 
 	if d.User == "" {
-		return fmt.Errorf("field user in ACLDirective is an empty string")
+		return fmt.Errorf("field user in ACLDirective (%s) is an empty string", d.String())
 	}
 	if strings.ContainsAny(d.User, ":#@") {
-		return fmt.Errorf("field user (%s) in ACLDirective contains invalid character", d.User)
+		return fmt.Errorf("field user (%s) in ACLDirective (%s) contains invalid character", d.User, d.String())
 	}
 	return nil
 }

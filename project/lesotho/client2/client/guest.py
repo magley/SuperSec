@@ -10,8 +10,8 @@ def log_in():
 
     resp = service.log_in(email, password)
     if resp.status_code == 200:
-        state.set_session_user(resp.json()['id'], resp.json()['email'])
-        print(f"{bcolors.OKCYAN}Logged in as {resp.json()['email']}{bcolors.ENDC}")
+        state.set_session_user_jwt(resp.json()['jwt'])
+        print(f"{bcolors.OKCYAN}Logged in as {state.STATE['email']}{bcolors.ENDC}")
     else:
         print(bcolors.FAIL + 'Failed to log in' + bcolors.ENDC)
 

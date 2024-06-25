@@ -2,9 +2,11 @@ package acl
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"os"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/syndtr/goleveldb/leveldb"
 
@@ -74,10 +76,21 @@ func (acl *ACL) Has(directive *ACLDirective) bool {
 
 // ACLDirective is stored as key-val pair where key is {object}-{user} and val is {relation}
 func (acl *ACL) Add(aclDirective ACLDirective, nss *ns.NamespaceStore) error {
-	_, err := nss.HasNamespace(aclDirective.Namespace())
+	namespace := aclDirective.Namespace()
+
+	_, err := nss.HasNamespace(namespace)
 	if err != nil {
 		return err
 	}
+
+	canBeSet, err := nss.IsSettable(namespace, aclDirective.Relation)
+	if !canBeSet {
+		return fmt.Errorf("relation '%s' cannot be set in namespace '%s' (tried adding ACL directive '%s')", aclDirective.Relation, namespace, aclDirective.String())
+	}
+	if err != nil {
+		return err
+	}
+
 	acl.Put(aclDirective.ObjectUserString(), aclDirective.Relation)
 	return nil
 }
@@ -120,7 +133,7 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 	namespaceName := aclDirective.Namespace()
 	G, err := nss.GetNamespaceGraph(namespaceName)
 	if err != nil {
-		log.Printf("Could not build graph from namespace %s: %s\n", namespaceName, err.Error())
+		log.Error().Err(err).Send()
 		return false
 	}
 

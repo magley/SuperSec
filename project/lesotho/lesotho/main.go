@@ -1,126 +1,105 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
+	"fmt"
 	"lesotho/acl"
+	"lesotho/apikey"
+	"lesotho/controller"
+	"lesotho/global"
 	ns "lesotho/namespace"
-	"log"
 	"net/http"
-	"strings"
+	"os"
+	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	"gopkg.in/ini.v1"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var glo_acl *acl.ACL
-var glo_nss *ns.NamespaceStore
-
-type AuthorizationResponse struct {
-	Authorized bool `json:"authorized"`
-}
-
-func aclUpdate(w http.ResponseWriter, r *http.Request) {
-	println(r.URL.EscapedPath())
-	if r.Method != http.MethodPost {
-		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+func initLogger() {
+	consoleWriter := zerolog.ConsoleWriter{
+		Out:        os.Stderr,
+		TimeFormat: time.RFC3339,
 	}
 
-	decoder := json.NewDecoder(r.Body)
-	var aclDirective acl.ACLDirective
-	err := decoder.Decode(&aclDirective)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	fileWriter := &lumberjack.Logger{
+		Filename: "./logs/lesotho.log",
+		MaxSize:  1,
 	}
 
-	err = aclDirective.Validate()
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = glo_acl.Add(aclDirective, glo_nss)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	log.Printf("Added %v to the ACL.\n", aclDirective)
-}
-
-func aclQuery(w http.ResponseWriter, r *http.Request) {
-	println(r.URL.EscapedPath())
-	if r.Method != http.MethodGet {
-		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	aclDirective, err := acl.NewACLDirective(
-		r.URL.Query().Get("object"),
-		r.URL.Query().Get("relation"),
-		r.URL.Query().Get("user"),
-	)
-
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	authorized := glo_acl.Check(aclDirective, glo_nss)
-	result := AuthorizationResponse{Authorized: authorized}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
-}
-
-func namespaceUpdate(w http.ResponseWriter, r *http.Request) {
-	println(r.URL.EscapedPath())
-	if r.Method != http.MethodPost {
-		log.Printf("Method %s not allowed on %s", r.Method, r.URL.EscapedPath())
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	namespaceAsString := new(strings.Builder)
-	_, err := io.Copy(namespaceAsString, r.Body)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	var namespace ns.Namespace
-	err = json.Unmarshal([]byte(namespaceAsString.String()), &namespace)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	glo_nss.Add(namespace.Name, namespaceAsString.String())
-	log.Printf("Added Namespace %s.\n", namespace.Name)
-	log.Println(namespaceAsString.String())
+	multiLevelWriter := zerolog.MultiLevelWriter(consoleWriter, fileWriter)
+	log.Logger = zerolog.New(multiLevelWriter).Level(zerolog.TraceLevel).With().Timestamp().Caller().Logger()
 }
 
 func main() {
-	namespaceGraphCache := ns.NewNamespaceGraphCache()
+	initLogger()
 
-	glo_nss = ns.NewNamespaceStore(namespaceGraphCache)
-	glo_nss.AddFromFile("basic", "./basic.json")
+	log.Info().Msgf("Loading configuration from config.ini ...")
+	cfg, err := ini.Load("config.ini")
+	if err != nil {
+		log.Error().Err(err).Msg("Fail to read 'config.ini'")
+		return
+	}
 
-	glo_acl = acl.NewACL("./data/acl/")
-	glo_acl.AddFromFile("./basic.acl", glo_nss)
-	defer glo_acl.Close()
+	log.Info().Msgf("Parsing configuration  ...")
+	cfg_ip := cfg.Section("MAIN").Key("ip").String()
+	cfg_port := cfg.Section("MAIN").Key("port").String()
+	cfg_ns_fname := ""
+	cfg_ns_name := ""
+	cfg_api_key_repo_path := cfg.Section("MAIN").Key("api_key_repo_path").String()
 
-	http.HandleFunc("/acl", aclUpdate)
-	http.HandleFunc("/acl/check", aclQuery)
-	http.HandleFunc("/namespace", namespaceUpdate)
+	cfg_acl_path := cfg.Section("ACL").Key("path").String()
+	cfg_acl_fname := ""
+	cfg_use_cache := cfg.Section("MAIN").Key("use_graph_namespace_cache").MustBool(true)
 
-	log.Println("Serving http://127.0.0.1:5000")
+	log.Info().Msgf("Loading API key repository ...")
+	global.ApiKeyRepo = apikey.OpenAPIKeyRepository(cfg_api_key_repo_path)
+	defer global.ApiKeyRepo.Close()
 
-	http.ListenAndServe("127.0.0.1:5000", nil)
+	k := cfg.Section("NAMESPACE").Key("namespace")
+	if k != nil {
+		cfg_ns_fname = k.String()
+	}
+	k = cfg.Section("NAMESPACE").Key("namespace_name")
+	if k != nil {
+		cfg_ns_name = k.String()
+	}
+	k = cfg.Section("ACL").Key("acl")
+	if k != nil {
+		cfg_acl_fname = k.String()
+	}
+
+	var namespaceGraphCache *ns.NamespaceGraphCache
+	if cfg_use_cache {
+		log.Info().Msgf("Building namespace graph cache ...")
+		namespaceGraphCache = nil
+	} else {
+		log.Info().Msgf("Namespace graph cache is ignored, skipping ...")
+	}
+
+	log.Info().Msgf("Building namespace store ...")
+	global.Nss = ns.NewNamespaceStore(namespaceGraphCache)
+
+	if cfg_ns_fname != "" {
+		log.Info().Msgf("Loading namespace '%s' from '%s' ...", cfg_ns_name, cfg_ns_fname)
+		global.Nss.AddFromFile(cfg_ns_name, cfg_ns_fname)
+	}
+
+	global.Acl = acl.NewACL(cfg_acl_path)
+	if cfg_acl_fname != "" {
+		log.Info().Msgf("Loading ACL from '%s' ...", cfg_acl_fname)
+		global.Acl.AddFromFile(cfg_acl_fname, global.Nss)
+	}
+	defer global.Acl.Close()
+
+	http.HandleFunc("/acl", controller.AclUpdate)
+	http.HandleFunc("/acl/check", controller.AclQuery)
+	http.HandleFunc("/namespace", controller.NamespaceUpdate)
+	http.HandleFunc("/apikey", controller.RequestApiKey)
+
+	lesotho_host := fmt.Sprintf("%s:%s", cfg_ip, cfg_port)
+	log.Info().Msgf("Serving Lesotho on http://%s", lesotho_host)
+	http.ListenAndServe(lesotho_host, nil)
 }

@@ -1,8 +1,17 @@
+import sys
 import json
-import requests
+from loguru import logger
+from pylesotho.client import LesothoClient
+from config import GLO
 
-LESOTHO_URL = "http://localhost:5000"
 NAMESPACE_NAME = 'client2' # Must match the name field in namespace.json
+_lesotho = LesothoClient('', '', '')
+
+
+def init_lesotho_client():
+    global _lesotho
+    _lesotho = LesothoClient(GLO['lesotho_url'], GLO['lesotho_api_client_name'], GLO['lesotho_api_key'])
+
 
 def update_namespace_from_file():
     '''
@@ -11,37 +20,21 @@ def update_namespace_from_file():
 
     with open("./namespace.json") as f:
         b = json.loads(f.read())
-
-        namespace = requests.post(f'{LESOTHO_URL}/namespace', json=b)
-        if (namespace.status_code == 400):
-            print('\033[91m' + namespace.content.decode() + '\033[0m')
+        response = _lesotho.namespace_update(b)
+        if (response.status_code == 400):
+            logger.error(f'Could not post namespace {response.content.decode()}')
         else:
-            print("\033[92mUploaded namespace to Lesotho\033[0m")
+            logger.info("Uploaded namespace to Lesotho")
 
 
 def add_acl_directive(obj: str, relation: str, user_id: int):
-    b = {
-        'object': f'{NAMESPACE_NAME}:{obj}',
-        'relation': relation,
-        'user': f'u{user_id}',
-    }
-
-    acl = requests.post(f'{LESOTHO_URL}/acl', json=b)
+    acl = _lesotho.acl_update(NAMESPACE_NAME, obj, relation, f'u{user_id}')
     if (acl.status_code == 400):
-        print('\033[91m' + acl.content.decode() + '\033[0m')
-    print(f"\033[92mUpdated {obj}:{relation}:u{user_id}\033[0m")
+        logger.error(f'Could not update ACL, {acl.content.decode()}')
+    else:
+        logger.info(f"Updated {obj}:{relation}:u{user_id}")
 
 
 def check_acl(obj: str, relation: str, user_id: int):
-    b = {
-        'object': f'{NAMESPACE_NAME}:{obj}',
-        'relation': relation,
-        'user': f'u{user_id}',
-    }
-
-    check = requests.get(f'{LESOTHO_URL}/acl/check', params=b)
-    if check.status_code > 200:
-        print('\033[91m' + check.content.decode() + '\033[0m')
-        return {'authorized': False}
-    else:
-        return check.json()
+    is_authorized = _lesotho.acl_query(NAMESPACE_NAME, obj, relation, f'u{user_id}')
+    return {'authorized': is_authorized}
