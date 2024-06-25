@@ -63,17 +63,24 @@ func (nss *NamespaceStore) Put(key string, val string) {
 // High level methods.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-func (nss *NamespaceStore) Add(namespaceName string, namespaceJson string) {
-	nss.Put(namespaceName, namespaceJson)
-	nss.revalidateGraphCache(namespaceName, namespaceJson)
+func (nss *NamespaceStore) Add(namespaceJson string) (*Namespace, error) {
+	var namespace Namespace
+	err := json.Unmarshal([]byte(namespaceJson), &namespace)
+	if err != nil {
+		return nil, err
+	}
+	nss.Put(namespace.Name, namespaceJson)
+	nss.revalidateGraphCache(namespace.Name, namespaceJson)
+	return &namespace, nil
 }
 
-func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname string) {
+func (nss *NamespaceStore) AddFromFile(namespaceDataFname string) (*Namespace, error) {
 	data, err := os.ReadFile(namespaceDataFname)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	nss.Add(namespaceName, string(data))
+	namespace, err := nss.Add(string(data))
+	return namespace, err
 }
 
 func (nss *NamespaceStore) HasNamespace(namespaceName string) (bool, error) {

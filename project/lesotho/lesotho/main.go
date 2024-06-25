@@ -47,7 +47,6 @@ func main() {
 	cfg_ip := cfg.Section("MAIN").Key("ip").String()
 	cfg_port := cfg.Section("MAIN").Key("port").String()
 	cfg_ns_fname := ""
-	cfg_ns_name := ""
 	cfg_api_key_repo_path := cfg.Section("MAIN").Key("api_key_repo_path").String()
 
 	cfg_acl_path := cfg.Section("ACL").Key("path").String()
@@ -61,10 +60,6 @@ func main() {
 	k := cfg.Section("NAMESPACE").Key("namespace")
 	if k != nil {
 		cfg_ns_fname = k.String()
-	}
-	k = cfg.Section("NAMESPACE").Key("namespace_name")
-	if k != nil {
-		cfg_ns_name = k.String()
 	}
 	k = cfg.Section("ACL").Key("acl")
 	if k != nil {
@@ -83,8 +78,13 @@ func main() {
 	global.Nss = ns.NewNamespaceStore(namespaceGraphCache)
 
 	if cfg_ns_fname != "" {
-		log.Info().Msgf("Loading namespace '%s' from '%s' ...", cfg_ns_name, cfg_ns_fname)
-		global.Nss.AddFromFile(cfg_ns_name, cfg_ns_fname)
+		log.Info().Msgf("Loading namespace from '%s' ...", cfg_ns_fname)
+		ns, err := global.Nss.AddFromFile(cfg_ns_fname)
+		if err != nil {
+			log.Error().Err(err).Msgf("Failed loading namespace from '%s'", cfg_ns_fname)
+		} else {
+			log.Info().Msgf("Succeeded loading namespace '%s' from '%s'", ns.Name, cfg_ns_fname)
+		}
 	}
 
 	global.Acl = acl.NewACL(cfg_acl_path)
