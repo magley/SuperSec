@@ -1,10 +1,5 @@
 import jwt
 from loguru import logger
-from flask import request
-
-
-def get_jwt_encoded_from_flask_request():
-    return request.headers.get('Authorization').split()[1]
 
 
 def jwt_get_secret():

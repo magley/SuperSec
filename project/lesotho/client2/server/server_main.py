@@ -37,6 +37,10 @@ userRepo = user.UserRepo()
 docRepo = doc.DocRepo()
 
 
+def get_jwt_encoded_from_flask_request():
+    return request.headers.get('Authorization').split()[1]
+
+
 @app.errorhandler(jwt.exceptions.DecodeError)
 def handle_foo_exception(error):
     logger.error("Invalid or tampered JWT")
@@ -75,7 +79,7 @@ def register():
 
 @app.route("/user/all", methods=["GET"])
 def get_all_users():
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
 
     r = userRepo.get_all()
     r = [{'id': doc['id'], 'email': doc['email']} for doc in r]
@@ -84,7 +88,7 @@ def get_all_users():
 
 @app.route("/doc/all", methods=["GET"])
 def get_all_docs():
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
 
     r = docRepo.get_all()
     r = [{'id': doc['id'], 'name': doc['name']} for doc in r]
@@ -93,7 +97,7 @@ def get_all_docs():
 
 @app.route("/doc/new", methods=["POST"])
 def new_doc():
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
 
     body = json.loads(request.json)
 
@@ -105,10 +109,10 @@ def new_doc():
 
 @app.route("/doc/check", methods=["PUT"])
 def check_doc_permission():
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
     body = json.loads(request.json)
 
-    id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
+    id_from_jwt = jwtutil.jwt_get_id(get_jwt_encoded_from_flask_request())
     if id_from_jwt != body['user']:
         logger.info(f"Unauthorized access from {body['user']} to {body['doc_id']} {body['relation']}")
         return {'authorized': False}
@@ -124,10 +128,10 @@ def check_doc_permission():
 
 @app.route("/doc/share", methods=["POST"])
 def share_doc():
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
     body = json.loads(request.json)
 
-    id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
+    id_from_jwt = jwtutil.jwt_get_id(get_jwt_encoded_from_flask_request())
     authorized = service.check_acl(body['doc_id'], 'owner', id_from_jwt)
     if not authorized:
         logger.info(f"Unauthorized share from {id_from_jwt} to {body['doc_id']} owner")
@@ -140,10 +144,10 @@ def share_doc():
 
 @app.route("/doc/append", methods=["PUT"])
 def append_to_doc():
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
     body = json.loads(request.json)
 
-    id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
+    id_from_jwt = jwtutil.jwt_get_id(get_jwt_encoded_from_flask_request())
     authorized = service.check_acl(body['doc_id'], 'editor', id_from_jwt)
     if not authorized:
         logger.info(f"Unauthorized edit from {id_from_jwt} to {body['doc_id']}")
@@ -157,10 +161,10 @@ def append_to_doc():
 
 @app.route("/doc/<id>", methods=["GET"])
 def get_doc_by_id(id: int):
-    jwtutil.jwt_verify(jwtutil.get_jwt_encoded_from_flask_request())
+    jwtutil.jwt_verify(get_jwt_encoded_from_flask_request())
     id = int(id)
 
-    id_from_jwt = jwtutil.jwt_get_id(jwtutil.get_jwt_encoded_from_flask_request())
+    id_from_jwt = jwtutil.jwt_get_id(get_jwt_encoded_from_flask_request())
     authorized = service.check_acl(id, 'editor', id_from_jwt)
     if not authorized:
         logger.info(f"Unauthorized read from {id_from_jwt} to {id}")
