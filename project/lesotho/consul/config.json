@@ -4,5 +4,9 @@
     "data_dir": "/data",
     "log_level": "INFO",
     "log_file": "logs/consul.log",
-    "log_rotate_bytes": 1048576
+    "log_rotate_bytes": 1048576,
+    "bind_addr": "127.0.0.1",
+    "ports": {
+        "http": 8500
+    }
 }
