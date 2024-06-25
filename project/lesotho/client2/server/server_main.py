@@ -156,7 +156,7 @@ def get_doc_by_id(id: int):
         logger.info(f"Unauthorized read from {id_from_jwt} to {id}")
         return make_response({'error': "Unauthorized"}, 403)
     else:
-        logger.info(f"User {id_from_jwt} edited {id}")
+        logger.info(f"User {id_from_jwt} opened {id}")
 
     doc = docRepo.find_by_id(id)
     return make_response(jsonify(doc), 200)
