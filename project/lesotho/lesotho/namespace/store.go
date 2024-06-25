@@ -69,8 +69,16 @@ func (nss *NamespaceStore) Add(namespaceJson string) (*Namespace, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	graph := NamespaceGraphFromNamespaceRelations(namespace.Relations)
+	err = graph.ValidateNamespaceGraph()
+	if err != nil {
+		return nil, err
+	}
+
 	nss.Put(namespace.Name, namespaceJson)
-	nss.revalidateGraphCache(namespace.Name, namespaceJson)
+	nss.revalidateGraphCache(namespace.Name, graph)
+
 	return &namespace, nil
 }
 
@@ -119,17 +127,11 @@ func (nss *NamespaceStore) GetRelationsFromJson(namespaceJson string) map[string
 	return relations
 }
 
-func (nss *NamespaceStore) revalidateGraphCache(namespaceName string, namespaceJson string) {
+func (nss *NamespaceStore) revalidateGraphCache(name string, graph *NamespaceGraph) {
 	if nss.graphCache == nil {
 		return
 	}
-
-	graph, ok := nss.graphCache.Get(namespaceName)
-	if ok {
-		relations := nss.GetRelationsFromJson(namespaceJson)
-		graph.RebuildFromNamespaceRelations(relations)
-		nss.graphCache.Put(namespaceName, graph)
-	}
+	nss.graphCache.Put(name, graph)
 }
 
 func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) (*NamespaceGraph, error) {
@@ -151,13 +153,12 @@ func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) (*NamespaceGr
 }
 
 func (nss *NamespaceStore) buildGraph(namespaceName string) (*NamespaceGraph, error) {
-	graph := NewNamespaceGraph()
 	relations, err := nss.GetRelations(namespaceName)
 	if err != nil {
 		return nil, err
 	}
 
-	graph.RebuildFromNamespaceRelations(relations)
+	graph := NamespaceGraphFromNamespaceRelations(relations)
 	return graph, nil
 }
 

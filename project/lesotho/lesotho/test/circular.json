@@ -1,0 +1,23 @@
+{
+    "name": "circular",
+    "relations": {
+        "one": {
+            "union": [
+                {
+                    "computed_userset": {
+                        "relation": "two"
+                    }
+                }
+            ]
+        },
+        "two": {
+            "union": [
+                {
+                    "computed_userset": {
+                        "relation": "one"
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -139,17 +139,10 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 
 	relationParents := make([]string, 0)
 	queue := []string{aclDirective.Relation}
-	queueUsed := map[string]bool{}
 
 	for len(queue) > 0 {
 		e := queue[0]
 		queue = queue[1:]
-
-		_, alreadyUsed := queueUsed[e]
-		if alreadyUsed {
-			continue
-		}
-		queueUsed[e] = true
 
 		// Get direct parent of e
 		dp := make([]string, 0)
@@ -162,14 +155,7 @@ func (acl *ACL) Check(aclDirective *ACLDirective, nss *ns.NamespaceStore) bool {
 		queue = append(queue, dp...)
 	}
 
-	parentsChecked := map[string]bool{}
 	for _, r := range relationParents {
-		_, alreadyUsed := parentsChecked[r]
-		if alreadyUsed {
-			continue
-		}
-		parentsChecked[r] = true
-
 		aclD := newACLDirectiveWithoutValidation(aclDirective.Object, r, aclDirective.User)
 		if acl.Has(aclD) {
 			return true
