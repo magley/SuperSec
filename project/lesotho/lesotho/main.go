@@ -82,6 +82,7 @@ func main() {
 		ns, err := global.Nss.AddFromFile(cfg_ns_fname)
 		if err != nil {
 			log.Error().Err(err).Msgf("Failed loading namespace from '%s'", cfg_ns_fname)
+			return
 		} else {
 			log.Info().Msgf("Succeeded loading namespace '%s' from '%s'", ns.Name, cfg_ns_fname)
 		}
