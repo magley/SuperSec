@@ -8,9 +8,15 @@ def _log_out():
 
 
 def _edit_document_by_id(doc_id: int):
-    if not service.check_access(state.STATE['id'], doc_id, 'editor').json()['authorized']:
-        print(f"{bcolors.FAIL}You are not authorized to edit this document.{bcolors.ENDC}")
+    check_access = service.check_access(state.STATE['id'], doc_id, 'viewer')
+    if not check_access.ok:
+        print(f"{bcolors.FAIL}{check_access.json()['error']}{bcolors.ENDC}")
         return
+    else:  
+        if not check_access.json()['authorized']:
+            print(f"{bcolors.FAIL}You are not authorized to edit this document.{bcolors.ENDC}")
+            return
+
     print(f"{bcolors.OKCYAN}You are in APPEND mode.\nType anything to make changes\nEnter a blank line to finish\n=========================={bcolors.ENDC}")
 
     ss = ""
@@ -31,14 +37,29 @@ def _edit_document_by_id(doc_id: int):
             break
 
     if should_save:
-        service.append_to_doc(doc_id, ss)
+        appenddoc = service.append_to_doc(doc_id, ss)
+        if not appenddoc.ok:
+            print(f"{bcolors.FAIL}{appenddoc.json()['error']}{bcolors.ENDC}")
+            return
 
 def _read_document_by_id(doc_id: int):
-    if not service.check_access(state.STATE['id'], doc_id, 'viewer').json()['authorized']:
-        print(f"{bcolors.FAIL}You are not authorized to view this document.{bcolors.ENDC}")
+    check_access = service.check_access(state.STATE['id'], doc_id, 'viewer')
+    if not check_access.ok:
+        print(f"{bcolors.FAIL}{check_access.json()['error']}{bcolors.ENDC}")
         return
-    
-    doc = service.get_doc_by_id(doc_id).json()
+    else:  
+        if not check_access.json()['authorized']:
+            print(f"{bcolors.FAIL}You are not authorized to view this document.{bcolors.ENDC}")
+            return
+
+    doc = service.get_doc_by_id(doc_id)
+    if doc.ok:
+        doc = doc.json()
+    else:
+        print(f"{bcolors.FAIL}{doc.json()['error']}{bcolors.ENDC}")
+        return
+
+
     print(f"{bcolors.OKCYAN}Here's the document:\n=========================={bcolors.ENDC}")
     print(doc['text'])
     print(f"{bcolors.OKCYAN}=========================={bcolors.ENDC}")
@@ -64,7 +85,12 @@ def _select_entity(entities: list, field_to_print: str, prompt: str):
             continue
 
 def _select_document():
-    all_docs = service.get_all_docs().json()
+    all_docs = service.get_all_docs()
+    if all_docs.ok:
+        all_docs = all_docs.json()
+    else:
+        print(f"{bcolors.FAIL}{all_docs.json()['error']}{bcolors.ENDC}")
+        return None
 
     if len(all_docs) == 0:
         print(f"{bcolors.WARNING}There are no documents in the system{bcolors.ENDC}")
@@ -73,8 +99,13 @@ def _select_document():
 
 
 def _select_user():
-    all_users = service.get_all_users().json()
-    all_users = [u for u in all_users if u['email'] != state.STATE['email']]
+    all_users = service.get_all_users()
+    if all_users.ok:
+        all_users = all_users.json()
+        all_users = [u for u in all_users if u['email'] != state.STATE['email']]
+    else:
+        print(f"{bcolors.FAIL}{all_users.json()['error']}{bcolors.ENDC}")
+        return None
 
     if len(all_users) == 0:
         print(f"{bcolors.WARNING}There are no users in the system to share with{bcolors.ENDC}")
@@ -105,8 +136,13 @@ def _share_document():
     doc = _select_document()
     if doc is None:
         return
-    if not service.check_access(state.STATE['id'], doc['id'], 'owner').json()['authorized']:
-        print(f"{bcolors.FAIL}You are not authorized to grant permissions to users for this document.{bcolors.ENDC}")
+    access_check = service.check_access(state.STATE['id'], doc['id'], 'owner')
+    if access_check.ok:
+        if not access_check.json()['authorized']:
+            print(f"{bcolors.FAIL}You are not authorized to grant permissions to users for this document.{bcolors.ENDC}")
+            return
+    else:
+        print(f"{bcolors.FAIL}{access_check.json()['error']}{bcolors.ENDC}")
         return
     
     user_to_share_with = _select_user()
@@ -118,12 +154,22 @@ def _share_document():
     
     role = _select_entity(roles, 'name', 'Select role to grant:')
     
-    service.share_doc(user_to_share_with['id'], doc['id'], role['name'])
+    sharedoc = service.share_doc(user_to_share_with['id'], doc['id'], role['name'])
+    if not sharedoc.ok:
+        print(f"{bcolors.FAIL}{sharedoc.json()['error']}{bcolors.ENDC}")
+        return
 
 
 def _new_document():
     doc_name = input("Document name:")
-    doc = service.new_doc(state.STATE['id'], doc_name).json()
+
+    doc = service.new_doc(state.STATE['id'], doc_name)
+    if doc.ok:
+        doc = doc.json()
+    else:
+        print(f"{bcolors.FAIL}{doc.json()['error']}{bcolors.ENDC}")
+        return
+    
     _edit_document_by_id(doc['id'])
 
 

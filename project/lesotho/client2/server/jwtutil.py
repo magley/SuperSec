@@ -24,6 +24,10 @@ def jwt_encode(subject: str, id: int):
 
 
 def jwt_verify(jwt_encoded: str):
+    """
+        Verify JWT received from request.
+        Throws `jwt.exceptions.DecodeError` on fail.
+    """
     jwt.decode(jwt_encoded, key=jwt_get_secret(), verify=True, algorithms='HS256')
 
 

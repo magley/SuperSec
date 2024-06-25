@@ -8,6 +8,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import jwtutil
 import config
+import jwt
 
 logger.add(
     'logs/server.log',
@@ -34,6 +35,15 @@ logging.basicConfig(handlers=[InterceptHandler()])
 
 userRepo = user.UserRepo()
 docRepo = doc.DocRepo()
+
+
+@app.errorhandler(jwt.exceptions.DecodeError)
+def handle_foo_exception(error):
+    logger.error("Invalid or tampered JWT")
+    response = jsonify({'error': "Invalid or tampered JWT"})
+    response.status_code = 403
+    return response
+
 
 @app.route("/login", methods=["POST"])
 def login():
