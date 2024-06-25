@@ -253,3 +253,51 @@ dependency-check.bat -s .\lesotho\visualizator
 ```
 
 У оба случаја, једину рањивост има **micromatch:4.0.7**, `CVE-2024-4067`.
+
+## SonarQube
+
+Инструкције за покретање погледати [ovde](https://docs.sonarsource.com/sonarqube/10.5/try-out-sonarqube/) i [ovde](https://docs.sonarsource.com/sonarqube/10.5/analyzing-source-code/scanners/sonarscanner/).
+
+![SonarQube Overiew](sonarqube_overview.png)
+
+_Coverage_ је 0% зато што је за његово рачунање потребан одвојен алат повезан на _SonarQube_.
+
+### _Maintanability_
+_Maintanability_ проблеми се претежно тичу преименовања променљивих, употребе константи где је могуће, уклањања некоришћених промењивих... на слици су приказани проблеми највећег приоритета.
+
+![High Maintanability Issues](maintanability_high.png)
+
+### _Security Hotspots_
+
+![Security Hotspots](security_hotspots.png)
+
+#### Make sure allowing safe and unsafe HTTP methods is safe here
+
+Односи се на следећу линију кода:
+```python
+@app.route("/something", methods=["POST", "OPTIONS"])
+def handle():
+...
+```
+
+Пошто је _OPTIONS_ "безбедна", а _POST_ "небезбедна" метода, проблем је што коришћени декоратор примењује обе методе на исту хендлер функцију. Решење би било имати одвојене хендлер функције за ове две методе.
+
+```python
+@app.route("/something", methods=["POST"])
+def handle1():
+...
+
+@app.route("/something", methods=["OPTIONS"])
+def handle2():
+...
+```
+
+#### Make sure disabling CSRF protection is safe here
+
+Приликом инстанцирања _Flask_ сервера требало би укључити _CSRF_ заштиту:
+
+```python
+app = Flask(__name__)
+csrf = CSRFProtect()
+csrf.init_app(app)
+```
