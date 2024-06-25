@@ -1,5 +1,10 @@
 package namespace
 
+import (
+	"fmt"
+	"slices"
+)
+
 // NamespaceGraph is a graph data structure describing a namespace object.
 type NamespaceGraph struct {
 	// Relations is a JSON-like map representing the namespace.
@@ -18,7 +23,8 @@ func NewNamespaceGraph() *NamespaceGraph {
 	return g
 }
 
-func (g *NamespaceGraph) RebuildFromNamespaceRelations(relations map[string]NamespaceRelation) {
+func NamespaceGraphFromNamespaceRelations(relations map[string]NamespaceRelation) *NamespaceGraph {
+	g := NewNamespaceGraph()
 	for relName, relContent := range relations {
 		g.Relations[relName] = make([]string, 0)
 
@@ -32,4 +38,22 @@ func (g *NamespaceGraph) RebuildFromNamespaceRelations(relations map[string]Name
 			}
 		}
 	}
+	return g
+}
+
+func (g *NamespaceGraph) ValidateNamespaceGraph() error {
+	for rel, parents := range g.Relations {
+		for _, p := range parents {
+			// Rule 1
+			if rel == p {
+				return fmt.Errorf("relation '%s' has itself in computed_userset", rel)
+			}
+
+			// Rule 2
+			if slices.Contains(g.Relations[p], rel) {
+				return fmt.Errorf("relations '%s' and '%s' are in each other's computed_userset (circular reference)", rel, p)
+			}
+		}
+	}
+	return nil
 }

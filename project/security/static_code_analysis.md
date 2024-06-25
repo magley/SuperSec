@@ -253,3 +253,181 @@ dependency-check.bat -s .\lesotho\visualizator
 ```
 
 У оба случаја, једину рањивост има **micromatch:4.0.7**, `CVE-2024-4067`.
+
+## SonarQube
+
+Инструкције за покретање погледати [ovde](https://docs.sonarsource.com/sonarqube/10.5/try-out-sonarqube/) i [ovde](https://docs.sonarsource.com/sonarqube/10.5/analyzing-source-code/scanners/sonarscanner/).
+
+![SonarQube Overiew](sonarqube_overview.png)
+
+_Coverage_ је 0% зато што је за његово рачунање потребан одвојен алат повезан на _SonarQube_.
+
+### _Maintanability_
+_Maintanability_ проблеми се претежно тичу преименовања променљивих, употребе константи где је могуће, уклањања некоришћених промењивих... на слици су приказани проблеми највећег приоритета.
+
+![High Maintanability Issues](maintanability_high.png)
+
+### _Security Hotspots_
+
+![Security Hotspots](security_hotspots.png)
+
+#### Make sure allowing safe and unsafe HTTP methods is safe here
+
+Односи се на следећу линију кода:
+```python
+@app.route("/something", methods=["POST", "OPTIONS"])
+def handle():
+...
+```
+
+Пошто је _OPTIONS_ "безбедна", а _POST_ "небезбедна" метода, проблем је што коришћени декоратор примењује обе методе на исту хендлер функцију. Решење би било имати одвојене хендлер функције за ове две методе.
+
+```python
+@app.route("/something", methods=["POST"])
+def handle1():
+...
+
+@app.route("/something", methods=["OPTIONS"])
+def handle2():
+...
+```
+
+#### Make sure disabling CSRF protection is safe here
+
+Приликом инстанцирања _Flask_ сервера требало би укључити _CSRF_ заштиту:
+
+```python
+app = Flask(__name__)
+csrf = CSRFProtect()
+csrf.init_app(app)
+```
+
+## govulncheck
+
+```
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+
+Output:
+
+```
+=== Symbol Results ===
+
+Vulnerability #1: GO-2024-2887
+    Unexpected behavior from Is methods for IPv4-mapped IPv6 addresses in
+    net/netip
+  More info: https://pkg.go.dev/vuln/GO-2024-2887
+  Standard library
+    Found in: net/netip@go1.21.5
+    Fixed in: net/netip@go1.21.11
+    Example traces found:
+      #1: main.go:105:21: lesotho.main calls http.ListenAndServe, which eventually calls netip.Addr.IsLoopback
+      #2: main.go:105:21: lesotho.main calls http.ListenAndServe, which eventually calls netip.Addr.IsMulticast
+
+Vulnerability #2: GO-2024-2687
+    HTTP/2 CONTINUATION flood in net/http
+  More info: https://pkg.go.dev/vuln/GO-2024-2687
+  Standard library
+    Found in: net/http@go1.21.5
+    Fixed in: net/http@go1.21.9
+    Example traces found:
+      #1: apikey/apikey.go:9:2: apikey.init calls leveldb.init, which eventually calls http.CanonicalHeaderKey
+      #2: namespace/store.go:56:18: namespace.NamespaceStore.Put calls api.KV.Put, which eventually calls http.Client.Do
+      #3: controller/authorization.go:95:13: controller.NamespaceUpdate calls http.Error
+      #4: apikey/apikey.go:93:37: apikey.APIKeyRepository.CheckAPIKey calls http.Header.Get
+      #5: controller/authorization.go:87:16: controller.AclQuery calls http.Header.Set
+      #6: main.go:105:21: lesotho.main calls http.ListenAndServe
+      #7: namespace/store.go:56:18: namespace.NamespaceStore.Put calls api.KV.Put, which eventually calls http.NewRequest
+      #8: namespace/store.go:56:18: namespace.NamespaceStore.Put calls api.KV.Put, which eventually calls http.Request.SetBasicAuth
+      #9: namespace/store.go:41:24: namespace.NamespaceStore.Get calls api.KV.Get, which eventually calls http.body.Close
+      #10: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.body.Read
+      #11: namespace/store.go:41:24: namespace.NamespaceStore.Get calls api.KV.Get, which eventually calls http.bodyEOFSignal.Close
+      #12: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.bodyEOFSignal.Read
+      #13: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.bodyLocked.Read
+      #14: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.bufioFlushWriter.Write
+      #15: namespace/store.go:41:24: namespace.NamespaceStore.Get calls api.KV.Get, which eventually calls http.cancelTimerBody.Close
+      #16: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.cancelTimerBody.Read
+      #17: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.checkConnErrorWriter.Write
+      #18: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.chunkWriter.Write
+      #19: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.connReader.Read
+      #20: main.go:40:22: lesotho.main calls ini.Load, which eventually calls http.expectContinueReader.Close
+      #21: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.expectContinueReader.Read
+      #22: namespace/store.go:41:24: namespace.NamespaceStore.Get calls api.KV.Get, which eventually calls http.gzipReader.Close
+      #23: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.gzipReader.Read
+      #24: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2ConnectionError.Error
+      #25: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2ErrCode.String
+      #26: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2FrameHeader.String
+      #27: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2FrameType.String
+      #28: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2FrameWriteRequest.String
+      #29: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2GoAwayError.Error
+      #30: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2Setting.String
+      #31: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2SettingID.String
+      #32: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2StreamError.Error
+      #33: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.http2chunkWriter.Write
+      #34: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2connError.Error
+      #35: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2duplicatePseudoHeaderError.Error
+      #36: namespace/store.go:41:24: namespace.NamespaceStore.Get calls api.KV.Get, which eventually calls http.http2gzipReader.Close
+      #37: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.http2gzipReader.Read
+      #38: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2headerFieldNameError.Error
+      #39: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2headerFieldValueError.Error
+      #40: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.http2pseudoHeaderError.Error
+      #41: main.go:40:22: lesotho.main calls ini.Load, which eventually calls http.http2requestBody.Close
+      #42: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.http2requestBody.Read
+      #43: controller/authorization.go:88:27: controller.AclQuery calls json.Encoder.Encode, which calls http.http2responseWriter.Write
+      #44: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.http2responseWriter.WriteString
+      #45: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.http2stickyErrWriter.Write
+      #46: namespace/store.go:41:24: namespace.NamespaceStore.Get calls api.KV.Get, which eventually calls http.http2transportResponseBody.Close
+      #47: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.http2transportResponseBody.Read
+      #48: acl/directive.go:67:20: acl.ACLDirective.ObjectUserString calls fmt.Sprintf, which eventually calls http.http2writeData.String
+      #49: controller/authorization.go:92:18: controller.NamespaceUpdate calls zerolog.Event.Msgf, which eventually calls http.loggingConn.Write
+      #50: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.maxBytesReader.Read
+      #51: apikey/apikey.go:9:2: apikey.init calls leveldb.init, which eventually calls http.onceCloseListener.Close
+      #52: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.persistConn.Read
+      #53: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.persistConnWriter.ReadFrom
+      #54: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.persistConnWriter.Write
+      #55: main.go:40:22: lesotho.main calls ini.Load, which eventually calls http.readTrackingBody.Close
+      #56: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.readTrackingBody.Read
+      #57: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls http.readWriteCloserBody.Read
+      #58: controller/authorization.go:88:27: controller.AclQuery calls json.Encoder.Encode, which calls http.response.Write
+      #59: controller/authorization.go:109:26: controller.NamespaceUpdate calls http.transportReadFromServerError.Error
+
+Vulnerability #3: GO-2024-2600
+    Incorrect forwarding of sensitive headers and cookies on HTTP redirect in
+    net/http
+  More info: https://pkg.go.dev/vuln/GO-2024-2600
+  Standard library
+    Found in: net/http@go1.21.5
+    Fixed in: net/http@go1.21.8
+    Example traces found:
+      #1: namespace/store.go:56:18: namespace.NamespaceStore.Put calls api.KV.Put, which eventually calls http.Client.Do
+
+Vulnerability #4: GO-2024-2599
+    Memory exhaustion in multipart form parsing in net/textproto and net/http
+  More info: https://pkg.go.dev/vuln/GO-2024-2599
+  Standard library
+    Found in: net/textproto@go1.21.5
+    Fixed in: net/textproto@go1.21.8
+    Example traces found:
+      #1: main.go:105:21: lesotho.main calls http.ListenAndServe, which eventually calls textproto.Reader.ReadLine
+      #2: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls textproto.Reader.ReadMIMEHeader
+
+Vulnerability #5: GO-2024-2598
+    Verify panics on certificates with an unknown public key algorithm in
+    crypto/x509
+  More info: https://pkg.go.dev/vuln/GO-2024-2598
+  Standard library
+    Found in: crypto/x509@go1.21.5
+    Fixed in: crypto/x509@go1.21.8
+    Example traces found:
+      #1: controller/authorization.go:106:19: controller.NamespaceUpdate calls io.Copy, which eventually calls x509.Certificate.Verify
+
+Your code is affected by 5 vulnerabilities from the Go standard library.
+This scan also found 0 vulnerabilities in packages you import and 3
+vulnerabilities in modules you require, but your code doesn't appear to call
+these vulnerabilities.
+Use '-show verbose' for more details.
+```
+
+Закључак:
+- Подложни смо једино осетљивостима из стандардне библиотеке. Потребно је инсталирати новију верзију.

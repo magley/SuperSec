@@ -6,7 +6,6 @@ import (
 	"io"
 	"lesotho/acl"
 	"lesotho/global"
-	ns "lesotho/namespace"
 	"net/http"
 	"strings"
 
@@ -111,14 +110,11 @@ func NamespaceUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var namespace ns.Namespace
-	err = json.Unmarshal([]byte(namespaceAsString.String()), &namespace)
+	namespace, err := global.Nss.Add(namespaceAsString.String())
 	if err != nil {
 		log.Error().Err(err).Send()
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	global.Nss.Add(namespace.Name, namespaceAsString.String())
 	log.Info().Msgf("Added Namespace %s", namespace.Name)
 }

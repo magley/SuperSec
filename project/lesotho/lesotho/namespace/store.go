@@ -63,17 +63,32 @@ func (nss *NamespaceStore) Put(key string, val string) {
 // High level methods.
 //_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
-func (nss *NamespaceStore) Add(namespaceName string, namespaceJson string) {
-	nss.Put(namespaceName, namespaceJson)
-	nss.revalidateGraphCache(namespaceName, namespaceJson)
+func (nss *NamespaceStore) Add(namespaceJson string) (*Namespace, error) {
+	var namespace Namespace
+	err := json.Unmarshal([]byte(namespaceJson), &namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	graph := NamespaceGraphFromNamespaceRelations(namespace.Relations)
+	err = graph.ValidateNamespaceGraph()
+	if err != nil {
+		return nil, err
+	}
+
+	nss.Put(namespace.Name, namespaceJson)
+	nss.revalidateGraphCache(namespace.Name, graph)
+
+	return &namespace, nil
 }
 
-func (nss *NamespaceStore) AddFromFile(namespaceName string, namespaceDataFname string) {
+func (nss *NamespaceStore) AddFromFile(namespaceDataFname string) (*Namespace, error) {
 	data, err := os.ReadFile(namespaceDataFname)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	nss.Add(namespaceName, string(data))
+	namespace, err := nss.Add(string(data))
+	return namespace, err
 }
 
 func (nss *NamespaceStore) HasNamespace(namespaceName string) (bool, error) {
@@ -112,17 +127,11 @@ func (nss *NamespaceStore) GetRelationsFromJson(namespaceJson string) map[string
 	return relations
 }
 
-func (nss *NamespaceStore) revalidateGraphCache(namespaceName string, namespaceJson string) {
+func (nss *NamespaceStore) revalidateGraphCache(name string, graph *NamespaceGraph) {
 	if nss.graphCache == nil {
 		return
 	}
-
-	graph, ok := nss.graphCache.Get(namespaceName)
-	if ok {
-		relations := nss.GetRelationsFromJson(namespaceJson)
-		graph.RebuildFromNamespaceRelations(relations)
-		nss.graphCache.Put(namespaceName, graph)
-	}
+	nss.graphCache.Put(name, graph)
 }
 
 func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) (*NamespaceGraph, error) {
@@ -144,13 +153,12 @@ func (nss *NamespaceStore) GetNamespaceGraph(namespaceName string) (*NamespaceGr
 }
 
 func (nss *NamespaceStore) buildGraph(namespaceName string) (*NamespaceGraph, error) {
-	graph := NewNamespaceGraph()
 	relations, err := nss.GetRelations(namespaceName)
 	if err != nil {
 		return nil, err
 	}
 
-	graph.RebuildFromNamespaceRelations(relations)
+	graph := NamespaceGraphFromNamespaceRelations(relations)
 	return graph, nil
 }
 
