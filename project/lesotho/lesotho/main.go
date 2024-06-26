@@ -95,12 +95,32 @@ func main() {
 	}
 	defer global.Acl.Close()
 
+	log.Info().Msgf("Loading HTTPs configuration ... ")
+	cfg_https_use, err := cfg.Section("HTTPS").Key("use_https").Bool()
+	if err != nil {
+		log.Error().Err(err).Send()
+		return
+	}
+	cfg_https_crt := ""
+	cfg_https_key := ""
+
+	if cfg_https_use {
+		cfg_https_crt = cfg.Section("HTTPS").Key("https_cert").String()
+		cfg_https_key = cfg.Section("HTTPS").Key("https_key").String()
+	}
+
 	http.HandleFunc("/acl", controller.AclUpdate)
 	http.HandleFunc("/acl/check", controller.AclQuery)
 	http.HandleFunc("/namespace", controller.NamespaceUpdate)
 	http.HandleFunc("/apikey", controller.RequestApiKey)
 
 	lesotho_host := fmt.Sprintf("%s:%s", cfg_ip, cfg_port)
-	log.Info().Msgf("Serving Lesotho on http://%s", lesotho_host)
-	http.ListenAndServeTLS(lesotho_host, "cert/server.crt", "cert/server.key", nil)
+
+	if cfg_https_use {
+		log.Info().Msgf("Serving Lesotho on https://%s", lesotho_host)
+		http.ListenAndServeTLS(lesotho_host, cfg_https_crt, cfg_https_key, nil)
+	} else {
+		log.Info().Msgf("Serving Lesotho on http://%s", lesotho_host)
+		http.ListenAndServe(lesotho_host, nil)
+	}
 }
