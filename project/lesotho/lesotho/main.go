@@ -102,5 +102,5 @@ func main() {
 
 	lesotho_host := fmt.Sprintf("%s:%s", cfg_ip, cfg_port)
 	log.Info().Msgf("Serving Lesotho on http://%s", lesotho_host)
-	http.ListenAndServe(lesotho_host, nil)
+	http.ListenAndServeTLS(lesotho_host, "cert/server.crt", "cert/server.key", nil)
 }
