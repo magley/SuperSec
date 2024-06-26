@@ -8,7 +8,8 @@ GLO = {
     "ip_address": "",
     "port": 0,
     "lesotho_api_client_name": "",
-    "lesotho_api_key": ""
+    "lesotho_api_key": "",
+    "lesotho_https_cert": False,
 }
 
 def load_config():
@@ -21,9 +22,12 @@ def load_config():
 
     global GLO
 
-    
+    lesotho_url_prefix = 'http://'
+    if 'lesotho_https_cert' in config['MAIN']:
+        GLO['lesotho_https_cert'] = config['MAIN']['lesotho_https_cert']
+        lesotho_url_prefix = 'https://' 
 
-    GLO['lesotho_url'] = config['MAIN']['lesotho']
+    GLO['lesotho_url'] = f"{lesotho_url_prefix}{config['MAIN']['lesotho']}"
     GLO['ip_address'] = config['MAIN']['ip']
     GLO['port'] = config['MAIN']['port']
     GLO['lesotho_api_client_name'] = config['MAIN']['api_key_client_name']
