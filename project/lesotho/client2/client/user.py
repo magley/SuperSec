@@ -8,7 +8,7 @@ def _log_out():
 
 
 def _edit_document_by_id(doc_id: int):
-    check_access = service.check_access(state.STATE['id'], doc_id, 'viewer')
+    check_access = service.check_access(state.STATE['id'], doc_id, 'editor')
     if not check_access.ok:
         print(f"{bcolors.FAIL}{check_access.json()['error']}{bcolors.ENDC}")
         return
