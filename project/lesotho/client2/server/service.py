@@ -10,7 +10,7 @@ _lesotho = LesothoClient('', '', '')
 
 def init_lesotho_client():
     global _lesotho
-    _lesotho = LesothoClient(GLO['lesotho_url'], GLO['lesotho_api_client_name'], GLO['lesotho_api_key'])
+    _lesotho = LesothoClient(GLO['lesotho_url'], GLO['lesotho_api_client_name'], GLO['lesotho_api_key'], GLO['lesotho_https_cert'])
 
 
 def update_namespace_from_file():

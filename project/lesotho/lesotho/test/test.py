@@ -2,6 +2,10 @@ import requests
 import json
 import time
 
+USE_HTTPS = True
+LESOTHO_URL = "https://127.0.0.1:5000" if USE_HTTPS else "http://127.0.0.1:5000"
+HTTPS_VERIFY = '../cert/server.crt' if USE_HTTPS else False
+
 API_KEY_CLIENT_NAME = "lesotho_test_script"
 API_KEY = ""
 
@@ -15,18 +19,16 @@ def load_api_key():
 def request_api_key():
     global API_KEY
 
-    url = "http://127.0.0.1:5000"
     payload = {
         "client": API_KEY_CLIENT_NAME
     }
-    resp = requests.post(f"{url}/apikey", json=payload)
+    resp = requests.post(f"{LESOTHO_URL}/apikey", json=payload, verify=HTTPS_VERIFY)
     body = json.loads(resp.content.decode())
     API_KEY = body['key']
     print(API_KEY)
 
 
 def basic_test(o, r, u, expecting: bool):
-    url = "http://127.0.0.1:5000"
     payload = {
         "object": o,
         "relation": r,
@@ -35,7 +37,7 @@ def basic_test(o, r, u, expecting: bool):
     headers = {
         "Authorization": f"{API_KEY_CLIENT_NAME} {API_KEY}"
     }
-    resp = requests.get(f"{url}/acl/check", payload, headers=headers)
+    resp = requests.get(f"{LESOTHO_URL}/acl/check", payload, headers=headers, verify=HTTPS_VERIFY)
 
     try:
         got = json.loads(resp.content.decode())["authorized"]

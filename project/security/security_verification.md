@@ -67,8 +67,8 @@
 
 | Број  | Опис | CWE | Испуњеност |
 | ----- | ---- | --- | ---------- |
-| 1.9.1 | Verify the application encrypts communications between components, particularly when these components are in different containers, systems, sites, or cloud providers. | 319 | **Не**, HTTPs није имплементиран. |
-| 1.9.2 | Verify that application components verify the authenticity of each side in a communication link to prevent person-in-the-middle attacks. For example, application components should validate TLS certificates and chains. | 295 | **Не**, HTTPs није имплементиран. |
+| 1.9.1 | Verify the application encrypts communications between components, particularly when these components are in different containers, systems, sites, or cloud providers. | 319 | **Парцијално**, само Lesotho сервер подржава HTTPs. |
+| 1.9.2 | Verify that application components verify the authenticity of each side in a communication link to prevent person-in-the-middle attacks. For example, application components should validate TLS certificates and chains. | 295 | **Парцијално**, само Lesotho сервер подржава HTTPs. |
 
 ### V1.10 Malicious Software Architecture
 
@@ -130,10 +130,10 @@
 | Број  | Опис | CWE | NIST | Испуњеност |
 | ----- | ---- | --- | ---- | ---------- |
 | 2.2.1 | Verify that anti-automation controls are effective at mitigating  breached credential testing, brute force, and account lockoutattacks. Such controls include blocking the most common  breached passwords, soft lockouts, rate limiting, CAPTCHA, ever  increasing delays between attempts, IP address restrictions, or  risk-based restrictions such as location, first login on a device,  recent attempts to unlock the account, or similar. Verify that no  more than 100 failed attempts per hour is possible on a single  account. | 307 | 5.2.2 / 5.1.1.2 / 5.1.4.2 / 5.1.5.2 | **Не** |
-| 2.2.2 | Verify that the use of weak authenticators (such as SMS and email) is limited to secondary verification and transaction approval and not as a replacement for more secure authentication methods. Verify that stronger methods are offered before weak methods, users are aware of the risks, or that proper measures are in place to limit the risks of account compromise. | 304 | 5.2.10.0 | **Не** |
+| 2.2.2 | Verify that the use of weak authenticators (such as SMS and email) is limited to secondary verification and transaction approval and not as a replacement for more secure authentication methods. Verify that stronger methods are offered before weak methods, users are aware of the risks, or that proper measures are in place to limit the risks of account compromise. | 304 | 5.2.10.0 | **Да** |
 | 2.2.3 | Verify that secure notifications are sent to users after updates to authentication details, such as credential resets, email or address changes, logging in from unknown or risky locations. The use of push notifications - rather than SMS or email - is preferred, but in the absence of push notifications, SMS or email is acceptable as long as no sensitive information is disclosed in the notification. | 620 | | **Не** |
 | 2.2.4 | Verify impersonation resistance against phishing, such as the use of multi-factor authentication, cryptographic devices with intent (such as connected keys with a push to authenticate), or at higher AAL levels, client-side certificates. | 308 | 5.2.5 | **Не**
-| 2.2.5 | Verify that where a Credential Service Provider (CSP) and the  application verifying authentication are separated, mutually  authenticated TLS is in place between the two endpoints. | 319 | 5.2.6 | **Не** |
+| 2.2.5 | Verify that where a Credential Service Provider (CSP) and the  application verifying authentication are separated, mutually  authenticated TLS is in place between the two endpoints. | 319 | 5.2.6 | **Парцијално**, захтеви за ауторизацију подржавају HTTPs. |
 | 2.2.6 | Verify replay resistance through the mandated use of One-time Passwords (OTP) devices, cryptographic authenticators, or lookup codes. | 308 | 5.2.8 | **Не** |
 | 2.2.7 | Verify intent to authenticate by requiring the entry of an OTP token or user-initiated action such as a button press on a FIDO hardware key. | 308 | 5.2.9 | **Не** |
 
@@ -197,11 +197,21 @@
 
 ### V3.2 Session Binding
 
-Није апликабилно за овај пројекат.
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 3.2.1 | Verify the application generates a new session token on user authentication. | 384 | 7.1 | **Да** |
+| 3.2.2 | Verify that session tokens possess at least 64 bits of entropy. | 331 | 7.1 | **?** |
+| 3.2.3 | Verify the application only stores session tokens in the browser using secure methods such as appropriately secured cookies (see section 3.4) or HTML 5 session storage. | 539 | 7.1 | **N/A** |
+| 3.2.4 | Verify that session tokens are generated using approved cryptographic algorithms. | 331 | 7.1 | **Да**, HS256 но у данашње време он није нужно најбољи. |
 
 ### V3.3 Session Termination
 
-Није апликабилно за овај пројекат. Сесије су локалне и чувају се у радној меморији клијента (demo2).
+| Број  | Опис | CWE | NIST | Испуњеност |
+| ----- | ---- | --- | ---- | ---------- |
+| 3.3.1 | Verify that logout and expiration invalidate the session token, such that the back button or a downstream relying party does not resume an authenticated session, including across relying parties. | 613 | 7.1 | **Не** |
+| 3.3.2 | If authenticators permit users to remain logged in, verify that re-authentication occurs periodically both when actively used or after an idle period. | 613 | 7.2 | **N/A** |
+| 3.3.3 | Verify that the application gives the option to terminate all other active sessions after a successful password change (including change via password reset/recovery), and that this is effective across the application, federated login (if present), and any relying parties. | 613 | | **N/A** |
+| 3.3.4 | Verify that users are able to view and (having re-entered login credentials) log out of any or all currently active sessions and devices. | 613 | 7.1 | **Не** |
 
 ### V3.4 Cookie-based Session Management
 
@@ -209,7 +219,7 @@
 
 ### V3.5 Cookie-based Session Management
 
-Није апликабилно за овај пројекат. Не користе се JWT/OAuth/SAML кључеви.
+Није апликабилно за овај пројекат.
 
 ### V3.6 Federated Re-authentication
 
@@ -219,7 +229,7 @@
 
 | Број  | Опис | CWE | NIST | Испуњеност |
 | ----- | ---- | --- | ---- | ---------- |
-| 3.7.1 | Verify the application ensures a full, valid login session or requires re-authentication or secondary verification before allowing any sensitive transactions or account modifications. | 306 | | **Не** |
+| 3.7.1 | Verify the application ensures a full, valid login session or requires re-authentication or secondary verification before allowing any sensitive transactions or account modifications. | 306 | | **N/A** |
 
 ## V4 Access Control
 
@@ -292,7 +302,7 @@
 
 | Број  | Опис | CWE | Испуњеност |
 | ----- | ---- | --- | ---------- |
-| 5.4.1 | Verify that the application uses memory-safe string, safer memory copy and  pointer arithmetic to detect or prevent stack, buffer, or heap overflows. | 120 | **?** |
+| 5.4.1 | Verify that the application uses memory-safe string, safer memory copy and  pointer arithmetic to detect or prevent stack, buffer, or heap overflows. | 120 | **Да** |
 | 5.4.2 | Verify that format strings do not take potentially hostile input, and are  constant. | 134 | **Не** (парцијално задовољено) |
 | 5.4.3 | Verify that sign, range, and input validation techniques are used to prevent  integer overflows. | 190 | **N/A** |
 

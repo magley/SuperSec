@@ -17,6 +17,8 @@ from pylesotho.client import LesothoClient
 # Make sure to obtain an API key.
 
 cli = LesothoClient("http://localhost:5000", LESOTHO_CLIENT_NAME, LESOTHO_API_KEY)
+cli = LesothoClient("https://localhost:5000", LESOTHO_CLIENT_NAME, LESOTHO_API_KEY, './server.cert') # If using HTTPs
+
 
 # Upload a namespace called "namespace1"
 

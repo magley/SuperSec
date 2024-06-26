@@ -264,8 +264,7 @@
             "shape": "flow",
             "attrs": {
               "line": {
-                "stroke": "red",
-                "strokeWidth": 2.5,
+                "stroke": "#333333",
                 "targetMarker": {
                   "name": "block"
                 },
@@ -281,11 +280,11 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Request (HTTP)",
+              "name": "Request (HTTPs)",
               "description": "Authorization request",
               "outOfScope": false,
               "reasonOutOfScope": "",
-              "hasOpenThreats": true,
+              "hasOpenThreats": false,
               "isBidirectional": false,
               "isEncrypted": false,
               "isPublicNetwork": false,
@@ -294,7 +293,7 @@
                 {
                   "id": "aed54332-fa93-462a-950d-c4d4efdeac86",
                   "title": "HTTPs недостаје",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "type": "Information disclosure",
                   "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
@@ -308,7 +307,7 @@
             },
             "id": "f5be0d24-e8ec-4d9c-8999-2f04673f746c",
             "labels": [
-              "Request (HTTP)"
+              "Request (HTTPs)"
             ],
             "source": {
               "cell": "820a1214-d405-4efd-869e-d64075e5824b"
@@ -331,8 +330,7 @@
             "shape": "flow",
             "attrs": {
               "line": {
-                "stroke": "red",
-                "strokeWidth": 2.5,
+                "stroke": "#333333",
                 "targetMarker": {
                   "name": "block"
                 },
@@ -348,11 +346,11 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Response (HTTP)",
+              "name": "Response (HTTPs)",
               "description": "Authorization response",
               "outOfScope": false,
               "reasonOutOfScope": "",
-              "hasOpenThreats": true,
+              "hasOpenThreats": false,
               "isBidirectional": false,
               "isEncrypted": false,
               "isPublicNetwork": false,
@@ -361,7 +359,7 @@
                 {
                   "id": "4cd9f5b1-e7bb-4419-b814-51389428f954",
                   "title": "HTTPs недостаје",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "type": "Information disclosure",
                   "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
@@ -375,7 +373,7 @@
             },
             "id": "b6dbbde5-dcdc-4c69-a16f-88ca46bb561b",
             "labels": [
-              "Response (HTTP)"
+              "Response (HTTPs)"
             ],
             "source": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
@@ -398,8 +396,7 @@
             "shape": "flow",
             "attrs": {
               "line": {
-                "stroke": "red",
-                "strokeWidth": 2.5,
+                "stroke": "#333333",
                 "targetMarker": {
                   "name": "block"
                 },
@@ -415,11 +412,11 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Request (HTTP)",
+              "name": "Request (HTTPs)",
               "description": "Authorization",
               "outOfScope": false,
               "reasonOutOfScope": "",
-              "hasOpenThreats": true,
+              "hasOpenThreats": false,
               "isBidirectional": false,
               "isEncrypted": false,
               "isPublicNetwork": false,
@@ -428,7 +425,7 @@
                 {
                   "id": "9fd3704e-d88a-4f9e-a904-e82ef7d32522",
                   "title": "HTTPs недостаје",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "type": "Information disclosure",
                   "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
@@ -442,7 +439,7 @@
             },
             "id": "4d5b5a0d-1eef-410f-bdaa-bf1b6e360f1c",
             "labels": [
-              "Request (HTTP)"
+              "Request (HTTPs)"
             ],
             "source": {
               "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
@@ -456,6 +453,10 @@
                 "y": 0
               },
               {
+                "x": 660,
+                "y": -60
+              },
+              {
                 "x": 620,
                 "y": -80.5
               }
@@ -465,8 +466,7 @@
             "shape": "flow",
             "attrs": {
               "line": {
-                "stroke": "red",
-                "strokeWidth": 2.5,
+                "stroke": "#333333",
                 "targetMarker": {
                   "name": "block"
                 },
@@ -482,11 +482,11 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Response (HTTP)",
+              "name": "Response (HTTPs)",
               "description": "Authorization",
               "outOfScope": false,
               "reasonOutOfScope": "",
-              "hasOpenThreats": true,
+              "hasOpenThreats": false,
               "isBidirectional": false,
               "isEncrypted": false,
               "isPublicNetwork": false,
@@ -495,7 +495,7 @@
                 {
                   "id": "fe5de0da-bc16-4dbc-bc36-482132503707",
                   "title": "HTTPs недостаје",
-                  "status": "Open",
+                  "status": "Mitigated",
                   "severity": "High",
                   "type": "Information disclosure",
                   "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
@@ -509,7 +509,7 @@
             },
             "id": "81c93b43-4e90-42a7-b686-adcc72e8ffd7",
             "labels": [
-              "Response (HTTP)"
+              "Response (HTTPs)"
             ],
             "source": {
               "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
@@ -1487,6 +1487,6 @@
     ],
     "diagramTop": 1,
     "reviewer": "",
-    "threatTop": 30
+    "threatTop": 32
   }
 }

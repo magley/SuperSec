@@ -37,8 +37,11 @@ LESOTHO_URL = config['MAIN']['lesotho']
 FRONTEND_URL = config['MAIN']['trusted_origin']
 IP_ADDRESS = config['MAIN']['ip']
 PORT = config['MAIN']['port']
+LESOTHO_HTTPS_CERT = config['MAIN'].get('lesotho_https_cert', False)
+LESOTHO_PROTOCOL = 'http://' if LESOTHO_HTTPS_CERT == False else 'https://'
+LESOTHO_URL = LESOTHO_PROTOCOL + LESOTHO_URL
 
-lesotho = LesothoClient(LESOTHO_URL, LESOTHO_API_CLIENT_NAME, LESOTHO_API_KEY)
+lesotho = LesothoClient(LESOTHO_URL, LESOTHO_API_CLIENT_NAME, LESOTHO_API_KEY, LESOTHO_HTTPS_CERT)
 
 app = Flask(__name__)
 

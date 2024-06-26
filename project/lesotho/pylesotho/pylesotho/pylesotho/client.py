@@ -1,10 +1,11 @@
 import requests
 
 class LesothoClient():
-    def __init__(self, lesotho_url: str, lesotho_api_key_client_name: str, lesotho_api_key: str) -> None:
+    def __init__(self, lesotho_url: str, lesotho_api_key_client_name: str, lesotho_api_key: str, lesotho_certificate: bool | str = False) -> None:
         self._lesotho_url = lesotho_url
         self._lesotho_api_key_client_name = lesotho_api_key_client_name
         self._lesotho_api_key = lesotho_api_key
+        self._lesotho_certificate = lesotho_certificate
 
     def acl_update(self, namespace: str, obj: str, relation: str, user: str) -> requests.Response:
         acl_directive = {
@@ -17,7 +18,7 @@ class LesothoClient():
             "Authorization": f"{self._lesotho_api_key_client_name} {self._lesotho_api_key}"
         }
 
-        return requests.post(f'{self._lesotho_url}/acl', json=acl_directive, headers=headers)
+        return requests.post(f'{self._lesotho_url}/acl', json=acl_directive, headers=headers, verify=self._lesotho_certificate)
 
     def acl_query(self, namespace: str, obj: str, relation: str, user: str) -> bool:
         acl_directive = {
@@ -30,7 +31,7 @@ class LesothoClient():
             "Authorization": f"{self._lesotho_api_key_client_name} {self._lesotho_api_key}"
         }
 
-        resp = requests.get(f'{self._lesotho_url}/acl/check', params=acl_directive, headers=headers)
+        resp = requests.get(f'{self._lesotho_url}/acl/check', params=acl_directive, headers=headers, verify=self._lesotho_certificate)
         if not resp.ok:
             return False
         else:
@@ -41,4 +42,4 @@ class LesothoClient():
             "Authorization": f"{self._lesotho_api_key_client_name} {self._lesotho_api_key}"
         }
 
-        return requests.post(f'{self._lesotho_url}/namespace', json=namespace_dict, headers=headers)
+        return requests.post(f'{self._lesotho_url}/namespace', json=namespace_dict, headers=headers, verify=self._lesotho_certificate)
