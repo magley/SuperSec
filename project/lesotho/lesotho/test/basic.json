@@ -1,0 +1,50 @@
+{
+    "name": "basic",
+    "relations": {
+        "owner": {},
+        "reviewer": {},
+        "editor": {
+            "union": [
+                {
+                    "this": {}
+                },
+                {
+                    "computed_userset": {
+                        "relation": "owner"
+                    }
+                },
+                {
+                    "computed_userset": {
+                        "relation": "commenter"
+                    }
+                },
+                {
+                    "computed_userset": {
+                        "relation": "reviewer"
+                    }
+                }
+            ]
+        },
+        "viewer": {
+            "union": [
+                {
+                    "this": {}
+                },
+                {
+                    "computed_userset": {
+                        "relation": "editor"
+                    }
+                }
+            ]
+        },
+        "commenter": {
+            "union": [
+                {
+                    "computed_userset": {
+                        "relation": "reviewer"
+                    }
+                }
+            ]
+        }
+    }
+}

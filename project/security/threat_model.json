@@ -1,0 +1,1492 @@
+{
+  "version": "2.2.0",
+  "summary": {
+    "title": "Lesotho Threat Model",
+    "owner": "",
+    "description": "",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "New STRIDE diagram",
+        "diagramType": "STRIDE",
+        "placeholder": "New STRIDE diagram description",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.2.0",
+        "cells": [
+          {
+            "position": {
+              "x": 380,
+              "y": -130
+            },
+            "size": {
+              "width": 110,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "Lesotho"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 1,
+            "id": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968",
+            "data": {
+              "type": "tm.Process",
+              "name": "Lesotho",
+              "description": "The central authorization server.\n- Go 1.21.5",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "315c7549-7a20-4262-a7c7-02733add518d",
+                  "title": "Rate limiting недостаје",
+                  "status": "Open",
+                  "severity": "Low",
+                  "type": "Denial of service",
+                  "description": "Lesotho не ограничава број захтева у јединици времена. Веома лако може доћи до прекорачења границе, чиме би сервис постао недоступан",
+                  "mitigation": "Користити агент за rate limiting (nginx).\nХоризонтално скалирање платформе.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 12,
+                  "score": "1,25"
+                },
+                {
+                  "id": "2b8ae742-78a3-4a6f-8a39-3b1ebdafbb19",
+                  "title": "No API keys",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Information disclosure",
+                  "description": "Lesotho нуди свим сервисима да га користе директно. Помоћу API кључева би Lesotho постао deny-by-default сервис што је препоручено за компоненте са високим мрежним саобраћајем. У супротном систем постаје подложан како DoS нападима, тако злоупотребом привилегија.",
+                  "mitigation": "Увести механизам за идавање API кључева сервисима који желе да користе Lesotho. Кључеви би требало да имају рок трајања који се потенцијално може аутоматски обновити.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 13,
+                  "score": "4,0"
+                },
+                {
+                  "id": "7e125c25-c11a-4d37-b372-f8e242ad998b",
+                  "title": "No Sandboxing",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "Сервис је покренут директно на машини. Постоји ризик да сервис грешком изврши команду којом се бришу подаци или ремети рад машине. Ово је поготово тачно ако је апликација покренута са root привилегијама (што не би смело да се ради).",
+                  "mitigation": "Виртуелизација, издвајање у одвојене сервер рачунаре, контејнеризација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 14,
+                  "score": "0,825"
+                },
+                {
+                  "id": "e9d18dc5-cd07-423c-8255-514cbc62385f",
+                  "title": "No Logging",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "type": "Repudiation",
+                  "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
+                  "mitigation": "Имплементирати безбено логовање пратећи стандарде и препоруке да не дође до цурења поверљивих информација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 22,
+                  "score": "1,5"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 90,
+              "y": -290
+            },
+            "size": {
+              "width": 120,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "LevelDB"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 2,
+            "id": "f60ad4f9-f674-4bc3-980a-22d6bb8c3a3c",
+            "data": {
+              "type": "tm.Store",
+              "name": "LevelDB",
+              "description": "NoSQL database for storing ACL entities.\nLevelDB is a first-class citizen for Lesotho",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "158a07ea-b6e5-4345-a12e-841b5ec98e0f",
+                  "title": "No Sandboxing",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "Сервис је покренут директно на машини. Постоји ризик да сервис грешком изврши команду којом се бришу подаци или ремети рад машине. Ово је поготово тачно ако је апликација покренута са root привилегијама (што не би смело да се ради).",
+                  "mitigation": "Виртуелизација, издвајање у одвојене сервер рачунаре, контејнеризација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 18,
+                  "score": "0,825"
+                },
+                {
+                  "id": "5d32f8a9-ee07-4a36-bd9b-61085b8522b8",
+                  "title": "No Logging",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
+                  "mitigation": "Имплементирати безбено логовање пратећи стандарде и препоруке да не дође до цурења поверљивих информација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 24,
+                  "score": "1,5"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 600,
+              "y": -340
+            },
+            "size": {
+              "width": 120,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Consul"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 3,
+            "id": "9240d57d-9d47-4d1c-87a3-06f7f2493b5b",
+            "data": {
+              "type": "tm.Store",
+              "name": "Consul",
+              "description": "Although a service, we only use its Key-Value store.\n- consul 1.18.2",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": [
+                {
+                  "id": "f797ccf6-e97f-4e9f-8f33-402d62a99cf2",
+                  "title": "No Sandboxing",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "Сервис је покренут директно на машини. Постоји ризик да сервис грешком изврши команду којом се бришу подаци или ремети рад машине. Ово је поготово тачно ако је апликација покренута са root привилегијама (што не би смело да се ради).",
+                  "mitigation": "Виртуелизација, издвајање у одвојене сервер рачунаре, контејнеризација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 17,
+                  "score": "0,825"
+                },
+                {
+                  "id": "bc423b9a-77a0-4272-9a90-462021754aac",
+                  "title": "No Logging",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
+                  "mitigation": "Имплементирати безбено логовање пратећи стандарде и препоруке да не дође до цурења поверљивих информација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 23,
+                  "score": "1,5"
+                },
+                {
+                  "id": "1e18465f-6271-49ba-8e60-4160b7c10ee0",
+                  "title": "Data Tampering",
+                  "status": "Open",
+                  "severity": "Low",
+                  "type": "Tampering",
+                  "description": "У случају да нападач добије приступ Consul сервису, био би у стању изменити и брисати податке.",
+                  "mitigation": "Изван коришћења HTTPs и праћења препорука за безбедно руковање са Consul сервисом, не може се учинити много по разумној цени.\n",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 25,
+                  "score": "0,535"
+                }
+              ]
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Request (HTTPs)",
+              "description": "Authorization request",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "aed54332-fa93-462a-950d-c4d4efdeac86",
+                  "title": "HTTPs недостаје",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 4,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "f5be0d24-e8ec-4d9c-8999-2f04673f746c",
+            "labels": [
+              "Request (HTTPs)"
+            ],
+            "source": {
+              "cell": "820a1214-d405-4efd-869e-d64075e5824b"
+            },
+            "target": {
+              "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
+            },
+            "vertices": [
+              {
+                "x": 186,
+                "y": -30
+              },
+              {
+                "x": 300,
+                "y": -80.5
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Response (HTTPs)",
+              "description": "Authorization response",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "4cd9f5b1-e7bb-4419-b814-51389428f954",
+                  "title": "HTTPs недостаје",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 5,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "b6dbbde5-dcdc-4c69-a16f-88ca46bb561b",
+            "labels": [
+              "Response (HTTPs)"
+            ],
+            "source": {
+              "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
+            },
+            "target": {
+              "cell": "820a1214-d405-4efd-869e-d64075e5824b"
+            },
+            "vertices": [
+              {
+                "x": 400,
+                "y": 30
+              },
+              {
+                "x": 310,
+                "y": 90
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Request (HTTPs)",
+              "description": "Authorization",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "9fd3704e-d88a-4f9e-a904-e82ef7d32522",
+                  "title": "HTTPs недостаје",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 7,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "4d5b5a0d-1eef-410f-bdaa-bf1b6e360f1c",
+            "labels": [
+              "Request (HTTPs)"
+            ],
+            "source": {
+              "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
+            },
+            "target": {
+              "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
+            },
+            "vertices": [
+              {
+                "x": 700.5,
+                "y": 0
+              },
+              {
+                "x": 660,
+                "y": -60
+              },
+              {
+                "x": 620,
+                "y": -80.5
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Response (HTTPs)",
+              "description": "Authorization",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "fe5de0da-bc16-4dbc-bc36-482132503707",
+                  "title": "HTTPs недостаје",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 6,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "81c93b43-4e90-42a7-b686-adcc72e8ffd7",
+            "labels": [
+              "Response (HTTPs)"
+            ],
+            "source": {
+              "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
+            },
+            "target": {
+              "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
+            },
+            "vertices": [
+              {
+                "x": 470,
+                "y": 0
+              },
+              {
+                "x": 520,
+                "y": 60
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": "4 3"
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "ACL Key-Value Operations",
+              "description": "",
+              "outOfScope": true,
+              "reasonOutOfScope": "LevelDB is a first-class object of lesotho.",
+              "hasOpenThreats": false,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": []
+            },
+            "id": "948d6901-e8ce-4b96-b04a-7f90b97225c8",
+            "labels": [
+              "ACL Key-Value Operations"
+            ],
+            "source": {
+              "cell": "f60ad4f9-f674-4bc3-980a-22d6bb8c3a3c"
+            },
+            "target": {
+              "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Namespace Operations\n(HTTP)",
+              "description": "Key-Value -- PUT, GET\nFor Consul's KV store.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "945d6bb4-6b61-437c-a3f0-62a31bd85622",
+                  "title": "HTTPs недостаје",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 11,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "e0f7df22-d46d-45c0-bd7c-22e2416002e0",
+            "labels": [
+              "Namespace Operations\n(HTTP)"
+            ],
+            "source": {
+              "cell": "a6e78a45-f0da-4b42-b8ea-6c8ebd72f968"
+            },
+            "target": {
+              "cell": "9240d57d-9d47-4d1c-87a3-06f7f2493b5b"
+            },
+            "vertices": [
+              {
+                "x": 580,
+                "y": -130
+              },
+              {
+                "x": 640,
+                "y": -220
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Request (HTTP)",
+              "description": "Update Namespace\nUpdate ACL\nQuery ACL",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "b46f3028-d859-4ae3-ba79-c817e85ec241",
+                  "title": "HTTPs недостаје",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 1,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "8703308b-7db9-4c9d-8486-e1f2548506be",
+            "labels": [
+              "Request (HTTP)"
+            ],
+            "source": {
+              "cell": "017180b4-396f-46a8-8869-205ef62c774d"
+            },
+            "target": {
+              "cell": "820a1214-d405-4efd-869e-d64075e5824b"
+            },
+            "vertices": [
+              {
+                "x": 70,
+                "y": 330
+              },
+              {
+                "x": 70,
+                "y": 220
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Demo1 Client Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "f761e094-0538-4831-b1ea-366389410cd6",
+            "labels": [
+              "Demo1 Client Boundary"
+            ],
+            "source": {
+              "x": 20,
+              "y": 310
+            },
+            "target": {
+              "x": 10,
+              "y": 470
+            },
+            "vertices": [
+              {
+                "x": 330,
+                "y": 330
+              },
+              {
+                "x": 330,
+                "y": 460
+              },
+              {
+                "x": 200,
+                "y": 490
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Response (HTTP)",
+              "description": "Namespace Update\nACL Update\nQuery ACL",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "3796e6b3-2a46-44ab-bab6-c5799cf5e65f",
+                  "title": "HTTPs недостаје",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол.",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 3,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "86c2a2af-6298-4b23-bac5-889ab73dc978",
+            "labels": [
+              "Response (HTTP)"
+            ],
+            "source": {
+              "cell": "820a1214-d405-4efd-869e-d64075e5824b"
+            },
+            "target": {
+              "cell": "017180b4-396f-46a8-8869-205ef62c774d"
+            },
+            "vertices": [
+              {
+                "x": 330,
+                "y": 210
+              },
+              {
+                "x": 350,
+                "y": 260
+              },
+              {
+                "x": 330,
+                "y": 330
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Demo2 Client Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "77abe3e6-8843-4807-890f-84db280250cf",
+            "labels": [
+              "Demo2 Client Boundary"
+            ],
+            "source": {
+              "x": 940,
+              "y": 490
+            },
+            "target": {
+              "x": 940,
+              "y": 310
+            },
+            "vertices": [
+              {
+                "x": 631,
+                "y": 460
+              },
+              {
+                "x": 631,
+                "y": 340
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Demo 1 Boundary",
+              "description": "All demo applications are off-premise relative to Lesotho.",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "6b96d2c2-dbc5-4295-8329-efa507cbbc05",
+            "labels": [
+              "Demo 1 Boundary"
+            ],
+            "source": {
+              "x": 10,
+              "y": 30
+            },
+            "target": {
+              "x": 20,
+              "y": 220
+            },
+            "vertices": [
+              {
+                "x": 290,
+                "y": 30
+              },
+              {
+                "x": 310,
+                "y": 200
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Consul Replication Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "9b4e2899-9661-4c2f-aa61-3e3a7aaf0b07",
+            "labels": [
+              "Consul Replication Boundary"
+            ],
+            "source": {
+              "x": 730,
+              "y": -360
+            },
+            "target": {
+              "x": 750,
+              "y": -210
+            },
+            "vertices": [
+              {
+                "x": 460,
+                "y": -360
+              },
+              {
+                "x": 460,
+                "y": -230
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Request (HTTP)",
+              "description": "Login\nRegister\nCreate document\nShare document\nEdit document\nCheck document permission\nGet all documents\nGet all users",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "3ea31cba-a439-4ac7-8342-a6c0c52399db",
+                  "title": "HTTPs недостаје",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 9,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "734f74d7-f361-4cfc-a552-897bbf230ed2",
+            "labels": [
+              "Request (HTTP)"
+            ],
+            "source": {
+              "cell": "41a7b30c-1b6c-4310-8332-2e31544e2bee"
+            },
+            "target": {
+              "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
+            },
+            "vertices": [
+              {
+                "x": 580,
+                "y": 320
+              },
+              {
+                "x": 580,
+                "y": 230
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Response (HTTP)",
+              "description": "Login\nRegister\nCreate document\nShare document\nEdit document\nCheck document permission\nGet all documents\nGet all users",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [
+                {
+                  "id": "fa20a008-8172-4bcf-a043-882e3e177ca4",
+                  "title": "HTTPs недостаје",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "Комуникација се спроводи кроз несигурни HTTP протокол. ",
+                  "mitigation": "Имплементирати HTTPs. API и API2 користе Flask; HTTPs се уграђује [овако](https://stackoverflow.com/a/29464090). Поред тога, препорука је да се HTTPs угради и у интерне сервисе. Некада Google ово није радио, што је омогућило \"лицима са ауторитетом\" да читају податке. HTTPs се у Go сервер уграђује [овако](https://stackoverflow.com/a/46992083). Поред тога, може се користити радни оквир попут Gorilla. У Consul се HTTPs уграђује [овако](https://developer.hashicorp.com/consul/tutorials/archive/tls-encryption-openssl-secure). За почетак се може користити LetsEncrypt сертификати.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 10,
+                  "score": "5,0"
+                }
+              ]
+            },
+            "id": "dccdcedf-ac06-4093-aeb4-aba64101ccad",
+            "labels": [
+              "Response (HTTP)"
+            ],
+            "source": {
+              "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
+            },
+            "target": {
+              "cell": "41a7b30c-1b6c-4310-8332-2e31544e2bee"
+            },
+            "vertices": [
+              {
+                "x": 860,
+                "y": 210
+              },
+              {
+                "x": 890,
+                "y": 350
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Disk I/O",
+              "description": "Fake NoSQL Database for users and documents",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": []
+            },
+            "id": "3bd511aa-2caf-46aa-95ed-77d6fd54ec58",
+            "labels": [
+              "Disk I/O"
+            ],
+            "source": {
+              "cell": "f6922054-0ab4-423f-84c0-fd5f83ea72d2"
+            },
+            "target": {
+              "cell": "7dfed9f8-a454-4f31-bb87-761725d2dd8c"
+            }
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Demo 2 Boundary",
+              "description": "All demo applications are off-premise relative to Lesotho.",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "def8db38-9c8d-486d-aebc-fdbd911643a4",
+            "labels": [
+              "Demo 2 Boundary"
+            ],
+            "source": {
+              "x": 1070,
+              "y": 220
+            },
+            "target": {
+              "x": 1070,
+              "y": 10
+            },
+            "vertices": [
+              {
+                "x": 570,
+                "y": 189.99999999999994
+              },
+              {
+                "x": 600,
+                "y": 39.99999999999994
+              }
+            ]
+          },
+          {
+            "position": {
+              "x": 120,
+              "y": 60
+            },
+            "size": {
+              "width": 120,
+              "height": 110
+            },
+            "attrs": {
+              "text": {
+                "text": "Demo1\nAPI Server"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 11,
+            "id": "820a1214-d405-4efd-869e-d64075e5824b",
+            "data": {
+              "type": "tm.Process",
+              "name": "Demo1\nAPI Server",
+              "description": "- Flask 3.0\n- Python 3.10",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "5b68cd23-05f9-4523-b7b6-a6ad784d0921",
+                  "title": "No Sandboxing",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "Сервис је покренут директно на машини. Постоји ризик да сервис грешком изврши команду којом се бришу подаци или ремети рад машине. Ово је поготово тачно ако је апликација покренута са root привилегијама (што не би смело да се ради).",
+                  "mitigation": "Виртуелизација, издвајање у одвојене сервер рачунаре, контејнеризација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 15,
+                  "score": "0,825"
+                },
+                {
+                  "id": "f0f2329b-c7be-4c5f-a1c9-3bbb56e3ef85",
+                  "title": "No Logging",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
+                  "mitigation": "Имплементирати безбено логовање пратећи стандарде и препоруке да не дође до цурења поверљивих информација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 20,
+                  "score": "1,5"
+                },
+                {
+                  "id": "5befda57-3880-48f4-b34b-be2f171ae170",
+                  "title": "No MFA",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "description": "Вишефакторска аутентификација се препоручује како би се спречили напади опонашања другог корисника.  Шема email/username + password се данас сматра сувише слабом.\n",
+                  "mitigation": "Имплементирати вишефакторску аутентификацију. ",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 30,
+                  "score": "3,2"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 150,
+              "y": 345
+            },
+            "size": {
+              "width": 100,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "Demo1\nWeb App"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 12,
+            "id": "017180b4-396f-46a8-8869-205ef62c774d",
+            "data": {
+              "type": "tm.Process",
+              "name": "Demo1\nWeb App",
+              "description": "- React 18.2.0\n",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "94729a66-2681-4bc1-a0d2-264fc7adcca7",
+                  "title": "No Captcha",
+                  "status": "Open",
+                  "severity": "Low",
+                  "type": "Denial of service",
+                  "description": "Без капче је могуће лако аутоматизовати слање захтева и изазвати DOS.",
+                  "mitigation": "Увести капчу.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 26,
+                  "score": "1,4"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 640,
+              "y": 80
+            },
+            "size": {
+              "width": 110,
+              "height": 110
+            },
+            "attrs": {
+              "text": {
+                "text": "Demo2\nAPI Server"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 13,
+            "id": "f6922054-0ab4-423f-84c0-fd5f83ea72d2",
+            "data": {
+              "type": "tm.Process",
+              "name": "Demo2\nAPI Server",
+              "description": "- Flask 3.0\n- Python 3.10",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "feacf0e7-cdb4-499d-87fc-a8d4707c7d0c",
+                  "title": "No Sandboxing",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "Сервис је покренут директно на машини. Постоји ризик да сервис грешком изврши команду којом се бришу подаци или ремети рад машине. Ово је поготово тачно ако је апликација покренута са root привилегијама (што не би смело да се ради).",
+                  "mitigation": "Виртуелизација, издвајање у одвојене сервер рачунаре, контејнеризација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 16,
+                  "score": "0,825"
+                },
+                {
+                  "id": "5ca71c93-1de3-424c-93cf-e1348807a90c",
+                  "title": "Invalid Token Authorization",
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "Сервер при успешној аутентификацији враћа JSON који има просту шему. Корисник лако може изменити тај JSON  и представити се као други корисник.",
+                  "mitigation": "Криптографски потписати токене након аутентификације и проверавати токен пре обраде сваког захтева.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 19,
+                  "score": "2,4"
+                },
+                {
+                  "id": "90f77087-72db-415a-87af-6025469b216f",
+                  "title": "No Logging",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "Сервис не врши логовање акција. Није могуће утврдити нарушавање редоследа акција, идентификовање извора одређених захтева. Сервис не подржава непорецивост.",
+                  "mitigation": "Имплементирати безбено логовање пратећи стандарде и препоруке да не дође до цурења поверљивих информација.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 21,
+                  "score": "1,5"
+                },
+                {
+                  "id": "0b5a5e67-ad98-48b8-a1b2-aedc796b64fb",
+                  "title": "No MFA",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Spoofing",
+                  "description": "Вишефакторска аутентификација се препоручује како би се спречили напади опонашања другог корисника.  Шема email/username + password се данас сматра сувише слабом.",
+                  "mitigation": "Имплементирати вишефакторску аутентификацију. ",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 29,
+                  "score": "3,2"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 940,
+              "y": 50
+            },
+            "size": {
+              "width": 120,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Local File Storage"
+              },
+              "topLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 14,
+            "id": "7dfed9f8-a454-4f31-bb87-761725d2dd8c",
+            "data": {
+              "type": "tm.Store",
+              "name": "Local File Storage",
+              "description": "Server data is kept in JSON files locally.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": false,
+              "storesInventory": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 708,
+              "y": 345
+            },
+            "size": {
+              "width": 90,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "Demo2\nCLI App"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 15,
+            "id": "41a7b30c-1b6c-4310-8332-2e31544e2bee",
+            "data": {
+              "type": "tm.Process",
+              "name": "Demo2\nCLI App",
+              "description": "A bare-bones CLI-based Google Docs clone\n- Python 3.10",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": [
+                {
+                  "id": "212ab9fa-62fa-4145-82b0-36a89e08d89d",
+                  "title": "No Captcha",
+                  "status": "Open",
+                  "severity": "Low",
+                  "type": "Denial of service",
+                  "description": "Без капче је могуће лако аутоматизовати слање захтева и изазвати DOS.\n",
+                  "mitigation": "Увести капчу.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 28,
+                  "score": "1,4"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 840,
+              "y": -160
+            },
+            "size": {
+              "width": 60,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Visualizator"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": "4 3"
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 16,
+            "id": "ab05dd4e-0610-4821-a1f9-c86be45cdb59",
+            "data": {
+              "type": "tm.Process",
+              "name": "Visualizator",
+              "description": "Visualize namespaces locally\n- d3.js 7.0\n- Vue 3.4",
+              "outOfScope": true,
+              "reasonOutOfScope": "Server administrators would install the visualizator locally and test their namespaces on-premise. There is no communication between this module and any other service in the diagram.",
+              "hasOpenThreats": false,
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": "",
+              "threats": []
+            }
+          }
+        ]
+      }
+    ],
+    "diagramTop": 1,
+    "reviewer": "",
+    "threatTop": 32
+  }
+}

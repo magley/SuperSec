@@ -1,0 +1,1 @@
+python ./server_main.py --config ./config.ini

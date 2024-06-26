@@ -1,0 +1,14 @@
+{
+    "name": "self",
+    "relations": {
+        "one": {
+            "union": [
+                {
+                    "computed_userset": {
+                        "relation": "one"
+                    }
+                }
+            ]
+        }
+    }
+}
