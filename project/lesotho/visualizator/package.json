@@ -16,9 +16,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.8",
-    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue": "^6.0.7",
     "knip": "^5.22.2",
     "typescript": "^5.5.2",
-    "vite": "^8.0.8"
+    "vite": "^8.1.4"
   }
 }
